@@ -1,0 +1,5 @@
+package com.smartbill360.config;
+
+public class SecurityConfig {
+
+}

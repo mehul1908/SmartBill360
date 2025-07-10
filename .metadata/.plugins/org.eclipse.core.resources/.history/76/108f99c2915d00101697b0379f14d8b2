@@ -1,0 +1,9 @@
+package com.smartbill360.repo;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.smartbill360.entity.User;
+
+public interface UserRepo extends JpaRepository<User, String>{
+
+}

@@ -1,0 +1,32 @@
+package com.smartbill360.service;
+
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
+import com.smartbill360.entity.User;
+import com.smartbill360.repo.UserRepo;
+
+public class UserService implements UserDetailsService{
+	
+	@Autowired
+	private UserRepo userRepo;
+
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		// TODO Auto-generated method stub
+		return this.getByEmail(username);
+	}
+	
+	public User getByEmail(String username) {
+		Optional<User> user = userRepo.findById(username);
+		if(user.isEmpty())
+			throw new UsernameNotFoundException("Email is not valid");
+		else
+			return user.get();
+	}
+
+}

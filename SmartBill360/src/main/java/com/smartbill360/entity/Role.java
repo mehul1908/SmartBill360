@@ -1,0 +1,5 @@
+package com.smartbill360.entity;
+
+public enum Role {
+	ADMIN , ACCOUNTANT , CLIENT
+}
