@@ -1,0 +1,13 @@
+package com.smartbill360.entity;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Entit
+public class User {
+
+}
