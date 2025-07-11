@@ -24,10 +24,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/webjars/**" , "/login/oauth2/code/google").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/candidate/**").hasRole("JOB_SEEKER")
-                .requestMatchers("/recuriter/**").hasRole("RECURUITER")
-                .requestMatchers("/user/**").authenticated()
+                .anyRequest().permitAll()
             );
 
         // Add JWT Filter

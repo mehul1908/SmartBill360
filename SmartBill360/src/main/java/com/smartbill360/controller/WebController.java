@@ -1,0 +1,72 @@
+package com.smartbill360.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.smartbill360.config.JWTUtils;
+import com.smartbill360.entity.User;
+import com.smartbill360.exception.EmailAndPasswordNotMatchException;
+import com.smartbill360.exception.UserAlreadyCreatedException;
+import com.smartbill360.model.ApiResponse;
+import com.smartbill360.model.LoginModel;
+import com.smartbill360.model.LoginResponse;
+import com.smartbill360.model.RegisterModel;
+import com.smartbill360.service.UserService;
+
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+
+@RestController
+@RequestMapping("/auth")
+@Validated
+@Slf4j
+public class WebController {
+
+	@Autowired
+	private UserService userService;
+	
+	@Autowired
+	private PasswordEncoder passEncoder;
+	
+	@Autowired
+	private JWTUtils jwtUtils;
+	
+	
+	@PostMapping("/register")
+	public ResponseEntity<ApiResponse> registerUser(@RequestBody @Valid RegisterModel  model) throws UserAlreadyCreatedException{
+		
+		model.setPassword(passEncoder.encode(model.getPassword()));
+		User user = userService.saveUser(model);
+		
+		if(user==null) {
+			return ResponseEntity.ok(new ApiResponse(false, null, "User Not Created"));
+		}
+		else {
+			return ResponseEntity.ok(new ApiResponse(true, user, "User Created"));
+		}
+	}
+	
+	@PostMapping("login")
+	public ResponseEntity<ApiResponse> login(@RequestBody @Valid LoginModel model) throws Exception{
+		
+		User user = userService.loginUser(model);
+		
+		if(user!=null && passEncoder.matches(model.getPassword(), user.getPassword())) {
+			String jwt = jwtUtils.generateToken(model.getEmail());
+			LoginResponse lr = new LoginResponse(jwt, user.getEmail(), user.getName());
+			return ResponseEntity.ok(new ApiResponse(true, lr, "User login successfully"));
+		}else if(user!=null) {
+			throw new EmailAndPasswordNotMatchException();
+		}
+		throw new Exception();
+		
+	}
+	
+	
+}

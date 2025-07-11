@@ -1,0 +1,47 @@
+package com.smartbill360.model;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ClientRegModel {
+
+	@NotBlank(message="GST number can not be blank")
+	@Size(min = 15 , max = 15 , message = "GST number must be of 15 characters long")
+	@Pattern(
+		    regexp = "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$",
+		    message = "Invalid GST number format"
+		)
+	private String gstin;
+	
+	@NotBlank(message = "Firm Name cannot be blank")
+	private String name;
+	
+	@Min(1)
+	@Max(37)
+	private Integer stateCode;
+	
+	@Email(message="Email is not in proper format")
+	@NotBlank(message = "Email can not be blank")
+	private String email;
+	
+	@NotNull(message = "Is Regular can not be blank")
+	private Boolean isRegular;
+	
+	private Integer contact;
+	
+	private String address;
+	
+	
+	
+}

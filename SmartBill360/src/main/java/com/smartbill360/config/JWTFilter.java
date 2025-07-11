@@ -37,13 +37,14 @@ public class JWTFilter extends OncePerRequestFilter
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException 
 	{
-		String url = request.getRequestURI();
-		log.info("Requested URL : " + url);
-		return url.contains("/auth") || 
-				url.contains("/swagger-ui") ||
-				url.contains("/v3/api-docs") || 
-				url.contains("/apidocs.html") ||
-				url.contains("/login/oauth2/code/google");
+		return true;
+//		String url = request.getRequestURI();
+//		log.info("Requested URL : " + url);
+//		return url.contains("/auth") || 
+//				url.contains("/swagger-ui") ||
+//				url.contains("/v3/api-docs") || 
+//				url.contains("/apidocs.html") ||
+//				url.contains("/login/oauth2/code/google");
 	}
 	
 	@Override

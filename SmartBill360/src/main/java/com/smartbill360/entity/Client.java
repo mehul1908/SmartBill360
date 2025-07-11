@@ -19,14 +19,14 @@ public class Client {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer client_id;
 	
-	@Column(name = "gstin" , unique = true)
+	@Column(name = "gstin" , unique = true , length = 15)
 	private String gstin;
 	
 	@Column(name = "firm_name" , nullable=false , unique = true)
 	private String name;
 	
 	@Column(name = "state_code" , nullable=false , unique=true)
-	private Integer state_code;
+	private Integer stateCode;
 	
 	private String email;
 	
@@ -42,7 +42,7 @@ public class Client {
 		super();
 		this.gstin = gstin;
 		this.name = name;
-		this.state_code = state_code;
+		this.stateCode = state_code;
 		this.email = email;
 		this.contact = contact;
 		this.address = address;

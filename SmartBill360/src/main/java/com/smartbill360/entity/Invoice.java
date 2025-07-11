@@ -22,7 +22,9 @@ public class Invoice {
 	private String invoiceNo;
 	
 	@ManyToOne
-	private Client client;
+	private Client consignee;
+	
+	private User consignor;
 	
 	@CreationTimestamp
 	private LocalDate date;
@@ -32,13 +34,17 @@ public class Invoice {
 	
 	@Column(name = "tax_amt" , nullable = false)
 	private Float taxAmt;
+	
+	private User accountant;
 
-	public Invoice(String invoiceNo, Client client, Float totalAmt, Float taxAmt) {
+	public Invoice(String invoiceNo, Client consignee, User consignor , Float totalAmt, Float taxAmt , User accountant) {
 		super();
 		this.invoiceNo = invoiceNo;
-		this.client = client;
+		this.consignee = consignee;
+		this.consignor = consignor;
 		this.totalAmt = totalAmt;
 		this.taxAmt = taxAmt;
+		this.accountant = accountant;
 	}
 	
 	

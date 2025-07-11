@@ -11,6 +11,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,14 +34,30 @@ public class User implements UserDetails{
 	private String password;
 	
 	@Column(name="role" , nullable=false)
+	@Enumerated(EnumType.STRING)
 	private Role role;
+	
+	private Boolean isActive = true;
+	
+	@Column(name="name" , nullable=false)
+	private String name;
+	
+	
+	public User(String email , String password , Role role , String name) {
+		this.email = email;
+		this.password = password;
+		this.role = role;
+		this.name = name;
+	}
 
 	@Override
+	@JsonIgnore
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return Collections.singletonList(new SimpleGrantedAuthority(this.role.name()));
 	}
 
 	@Override
+	@JsonIgnore
 	public String getUsername() {
 		// TODO Auto-generated method stub
 		return this.email;

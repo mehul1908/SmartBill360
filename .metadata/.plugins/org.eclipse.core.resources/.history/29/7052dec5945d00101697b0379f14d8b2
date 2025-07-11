@@ -1,0 +1,5 @@
+package com.smartbill360.model;
+
+public class ApiResponse {
+
+}
