@@ -1,0 +1,63 @@
+package com.smartbill360.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.smartbill360.entity.Client;
+import com.smartbill360.model.ApiResponse;
+import com.smartbill360.service.UserService;
+
+@RestController
+@RequestMapping("/user")
+public class CommonController {
+
+	@Autowired
+	private UserService userService;
+	
+//	@PreAuthorize("authenticated()")
+	@GetMapping("/get/client")
+	public ResponseEntity<ApiResponse> getAllClient(){
+		List<Client> clients = userService.getAllClient();
+		
+		return ResponseEntity.ok(new ApiResponse(true, clients, "Retrieved Clients"));
+	}
+
+//	@PreAuthorize("authenticated()")
+	@GetMapping("/get/client/gst/{gst}")
+	public ResponseEntity<ApiResponse> getClientByGST(@PathVariable String gst){
+		Client client = userService.getClientByGST(gst.toUpperCase());
+		
+		if(client==null)
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, null, "Client with given gst not found"));
+		return ResponseEntity.ok(new ApiResponse(true, client, "Client Found"));
+	}
+	
+
+//	@PreAuthorize("authenticated()")
+	@GetMapping("/get/client/id/{id}")
+	public ResponseEntity<ApiResponse> getClientById(@PathVariable Integer id){
+		Client client = userService.getClientById(id);
+		
+		if(client==null)
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, null, "Client with given id not found"));
+		return ResponseEntity.ok(new ApiResponse(true, client, "Client Found"));
+	}
+	
+//	@PreAuthorize("authenticated()")
+	@GetMapping("/get/client/keyword/{keyword}")
+	public ResponseEntity<ApiResponse> searchClientByNameSubstring(@PathVariable String keyword){
+		List<Client> clients = userService.searchClientByNameSubstring(keyword);
+		
+		return ResponseEntity.ok(new ApiResponse(true, clients, "Retrieved Clients"));
+	}
+
+	
+}

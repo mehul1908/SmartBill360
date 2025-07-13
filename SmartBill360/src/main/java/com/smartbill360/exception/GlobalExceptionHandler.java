@@ -82,6 +82,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
     }
     
+    @ExceptionHandler(GSTAlreadyExistedException.class)
+    public ResponseEntity<ErrorResponse> handleGSTAlreadyExisted(GSTAlreadyExistedException ex, HttpServletRequest request) {
+        ErrorResponse err = new ErrorResponse(LocalDateTime.now(), ex.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(err);
+    }
  
     @ExceptionHandler(EmailAndPasswordNotMatchException.class)
     public ResponseEntity<ErrorResponse> handleEmailAndPasswordNotMatch(ResourceNotFoundException ex, HttpServletRequest request) {

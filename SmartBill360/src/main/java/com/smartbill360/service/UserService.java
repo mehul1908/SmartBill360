@@ -1,10 +1,9 @@
 package com.smartbill360.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.smartbill360.entity.Client;
 import com.smartbill360.entity.User;
+import com.smartbill360.exception.GSTAlreadyExistedException;
 import com.smartbill360.exception.UserAlreadyCreatedException;
 import com.smartbill360.model.ClientRegModel;
 import com.smartbill360.model.LoginModel;
@@ -70,12 +70,41 @@ public class UserService implements UserDetailsService {
 		}
 	}
 
-	public Client createClient(@Valid ClientRegModel model) {
-		Client client = new Client(model.getGstin(), model.getName(), model.getStateCode(), model.getEmail(),
-				model.getContact(), model.getAddress(), model.getIsRegular());
-		clientRepo.save(client);
-		return client;
+	public Client createClient(@Valid ClientRegModel model) throws GSTAlreadyExistedException {
+		
+		Optional<Client> clientOp = clientRepo.findByGstin(model.getGstin());
+		if(clientOp.isEmpty()) {
+			Client client = new Client(model.getGstin(), model.getName(), model.getStateCode(), model.getEmail(),
+					model.getContact(), model.getAddress(), model.getIsRegular());
+			clientRepo.save(client);
+			return client;
+		}
+		throw new GSTAlreadyExistedException(model.getGstin());
 
+	}
+
+	public List<Client> getAllClient() {
+		List<Client> clients = clientRepo.findAll();
+		return clients;
+	}
+
+	public Client getClientByGST(String gst) {
+		Optional<Client> clientOp = clientRepo.findByGstin(gst);
+		if(clientOp.isEmpty()) return null;
+		
+		return clientOp.get();
+	}
+
+	public Client getClientById(Integer id) {
+		Optional<Client> clientOp = clientRepo.findById(id);
+		if(clientOp.isEmpty()) return null;
+		
+		return clientOp.get();
+	}
+
+	public List<Client> searchClientByNameSubstring(String keyword) {
+		List<Client> clients = clientRepo.findByNameContainingIgnoreCase(keyword);
+		return clients;
 	}
 
 }

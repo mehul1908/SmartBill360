@@ -30,14 +30,14 @@ public class Client {
 	
 	private String email;
 	
-	private Integer contact;
+	private String contact;
 	
 	private String address;
 	
 	@Column(name="regular" , nullable = false)
 	private Boolean isRegular;
 
-	public Client(String gstin, String name, Integer state_code, String email, Integer contact, String address,
+	public Client(String gstin, String name, Integer state_code, String email, String contact, String address,
 			Boolean isRegular) {
 		super();
 		this.gstin = gstin;
