@@ -1,0 +1,18 @@
+package com.smartbill360.repo;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.smartbill360.entity.Consignee;
+
+@Repository
+public interface ClientRepo extends JpaRepository<Consignee, Integer>{
+
+	Optional<Consignee> findByGstin(String gstin);
+	
+	List<Consignee> findByNameContainingIgnoreCase(String keyword);
+
+}

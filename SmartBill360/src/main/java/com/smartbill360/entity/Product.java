@@ -25,20 +25,20 @@ public class Product {
 	@Column(name="product_name" , nullable=false , unique=true)
 	private String name;
 	
-	@Column(name="hsn_code" , nullable=false)
-	private int hsnCode;
+	@Column(name="hsn_code" , nullable=false , length=8)
+	private String hsnCode;
 	
 	@ManyToOne
 	@JoinColumn(name="tax_slab" , nullable=false)
-	private TaxDetail taxSlab;
+	private TaxSlab taxSlab;
 	
 	
 	private Float rate;
 
 
-	public Product(String name, int hsnCode, TaxDetail taxSlab, Float rate) {
+	public Product(String name, String hsnCode, TaxSlab taxSlab, Float rate) {
 		super();
-		this.name = name;
+		this.name = name.toUpperCase();
 		this.hsnCode = hsnCode;
 		this.taxSlab = taxSlab;
 		this.rate = rate;

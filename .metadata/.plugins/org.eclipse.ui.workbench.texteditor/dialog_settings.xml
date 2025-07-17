@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<item key="hasShownOverlayPopupBefore" value="true"/>
+	<section name="java.lang.Class">
+		<item key="replaceBarOpen" value="true"/>
+		<list key="replacehistory">
+			<item value="Consignee"/>
+			<item value="consigneeOp"/>
+			<item value="consigneeRepo"/>
+			<item value="consignee"/>
+		</list>
+		<list key="findhistory">
+			<item value="UserAlready"/>
+			<item value="useral"/>
+			<item value="Client"/>
+			<item value="client"/>
+			<item value="clientOp"/>
+			<item value="clientRepo"/>
+		</list>
+	</section>
+</section>

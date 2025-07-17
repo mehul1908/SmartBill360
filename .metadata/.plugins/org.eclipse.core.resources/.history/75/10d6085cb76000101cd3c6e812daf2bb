@@ -1,0 +1,66 @@
+package com.smartbill360.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.smartbill360.entity.Consignee;
+import com.smartbill360.model.ApiResponse;
+import com.smartbill360.service.UserService;
+
+@RestController
+@RequestMapping("/user")
+public class CommonController {
+
+	@Autowired
+	private UserService userService;
+	
+//	@PreAuthorize("authenticated()")
+	@GetMapping("/get/consignee")
+	public ResponseEntity<ApiResponse> getAllConsignee(){
+		List<Consignee> consignees = userService.getAllConsignee();
+		
+		return ResponseEntity.ok(new ApiResponse(true, consignees, "Retrieved Consignees"));
+	}
+
+//	@PreAuthorize("authenticated()")
+	@GetMapping("/get/consignee/gst/{gst}")
+	public ResponseEntity<ApiResponse> getConsigneeByGST(@PathVariable String gst){
+		Consignee consignee = userService.getConsigneeByGST(gst.toUpperCase());
+		
+		if(consignee==null)
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, null, "Consignee with given gst not found"));
+		return ResponseEntity.ok(new ApiResponse(true, consignee, "Consignee Found"));
+	}
+	
+
+//	@PreAuthorize("authenticated()")
+	@GetMapping("/get/consignee/id/{id}")
+	public ResponseEntity<ApiResponse> getConsigneeById(@PathVariable Integer id){
+		Consignee consignee = userService.getConsigneeById(id);
+		
+		if(consignee==null)
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, null, "Consignee with given id not found"));
+		return ResponseEntity.ok(new ApiResponse(true, consignee, "Consignee Found"));
+	}
+	
+//	@PreAuthorize("authenticated()")
+	@GetMapping("/get/consignee/keyword/{keyword}")
+	public ResponseEntity<ApiResponse> searchConsigneeByNameSubstring(@PathVariable String keyword){
+		List<Consignee> consignees = userService.searchConsigneeByNameSubstring(keyword);
+		
+		return ResponseEntity.ok(new ApiResponse(true, consignees, "Retrieved Consignees"));
+	}
+	
+//	@PreAuthorize("hasAnyRole('ROLE_ADMIN' , 'ROLE_ACCOUNTANT')")
+	@GetMapping("/get/user/")
+
+	
+}

@@ -1,0 +1,22 @@
+package com.smartbill360.model;
+
+import com.smartbill360.entity.TaxDetail;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ProductRegModel {
+
+	private String name;
+	
+	private Integer hsnCode;
+	
+	private TaxDetail taxSlab;
+	
+	private Float rate;
+	
+}

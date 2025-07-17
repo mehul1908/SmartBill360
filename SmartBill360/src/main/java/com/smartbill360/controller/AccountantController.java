@@ -9,10 +9,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.smartbill360.entity.Client;
+import com.smartbill360.entity.Consignee;
+import com.smartbill360.entity.Product;
+import com.smartbill360.entity.TaxSlab;
 import com.smartbill360.exception.GSTAlreadyExistedException;
+import com.smartbill360.exception.ProductAlreadyCreatedException;
+import com.smartbill360.exception.TaxSlabAlreadyCreatedException;
 import com.smartbill360.model.ApiResponse;
-import com.smartbill360.model.ClientRegModel;
+import com.smartbill360.model.ConsigneeRegModel;
+import com.smartbill360.model.ProductRegModel;
+import com.smartbill360.model.TaxSlabRegModel;
+import com.smartbill360.service.ProductService;
 import com.smartbill360.service.UserService;
 
 import jakarta.validation.Valid;
@@ -24,18 +31,49 @@ public class AccountantController {
 	@Autowired
 	private UserService userService;
 	
+	@Autowired
+	private ProductService proService;
+	
 
-//	@PreAuthorize("hasRole('ROLE_ACCOUNTANT')")
-	@PostMapping("/add/client")
-	public ResponseEntity<ApiResponse> createClient(@RequestBody @Valid ClientRegModel model) throws GSTAlreadyExistedException{
+//	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@PostMapping("/create/consignee")
+	public ResponseEntity<ApiResponse> createConsignee(@RequestBody @Valid ConsigneeRegModel model) throws GSTAlreadyExistedException{
 		
-		Client client = userService.createClient(model);
+		Consignee consignee = userService.createConsignee(model);
 		
-		if(client!=null) {
+		if(consignee!=null) {
 			return ResponseEntity.ok(new ApiResponse(true, null, "Client is created successfully"));
 		}else {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(false, null, "Client can not be created"));
+			return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Client can not be created"));
 		}
 	}
 	
+	
+//	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@PostMapping("/create/product")
+	public ResponseEntity<ApiResponse> createProduct(@RequestBody @Valid ProductRegModel model) throws ProductAlreadyCreatedException{
+		Product prod = proService.createProduct(model);
+		if(prod != null) {
+			return ResponseEntity.ok(new ApiResponse(true, null, "Product is created successfully"));
+		}else {
+			return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Product can not be created"));
+		}
+		
+	}
+	
+	/*-----------------------------------------*/
+	
+//	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@PostMapping("/create/tax-slab")
+	public ResponseEntity<ApiResponse> createTaxSlab(@RequestBody @Valid TaxSlabRegModel model) throws TaxSlabAlreadyCreatedException{
+		
+		TaxSlab taxSlab = proService.createTaxSlab(model);
+	
+		if(taxSlab != null) {
+			return ResponseEntity.ok(new ApiResponse(true, null, "Tax Slab is created successfully"));
+		}else {
+			return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Tax Slab can not be created"));
+		}		
+	}
+		
 }

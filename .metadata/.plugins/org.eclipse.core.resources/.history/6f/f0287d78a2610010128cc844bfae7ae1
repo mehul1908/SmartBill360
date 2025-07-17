@@ -1,0 +1,23 @@
+package com.smartbill360.model;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class TaxSlabRegModel {
+
+	@NotNull(message="slab cannot be null")
+	private Integer slab;
+	
+	@NotNull(message="CGST cannot be null")
+	private Integer cgst;
+	
+	@NotNull(message="SGST cannot be null")
+	private Integer sgst;
+	
+	private Integer cess;
+}

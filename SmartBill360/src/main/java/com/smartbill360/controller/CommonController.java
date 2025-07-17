@@ -11,8 +11,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.smartbill360.entity.Client;
+import com.smartbill360.entity.Consignee;
+import com.smartbill360.entity.Product;
+import com.smartbill360.entity.Role;
+import com.smartbill360.entity.User;
 import com.smartbill360.model.ApiResponse;
+import com.smartbill360.service.ProductService;
 import com.smartbill360.service.UserService;
 
 @RestController
@@ -22,42 +26,76 @@ public class CommonController {
 	@Autowired
 	private UserService userService;
 	
+	@Autowired
+	private ProductService prodService;
+	
 //	@PreAuthorize("authenticated()")
-	@GetMapping("/get/client")
-	public ResponseEntity<ApiResponse> getAllClient(){
-		List<Client> clients = userService.getAllClient();
+	@GetMapping("/get/consignee")
+	public ResponseEntity<ApiResponse> getAllConsignee(){
+		List<Consignee> consignees = userService.getAllConsignee();
 		
-		return ResponseEntity.ok(new ApiResponse(true, clients, "Retrieved Clients"));
+		return ResponseEntity.ok(new ApiResponse(true, consignees, "Retrieved Consignees"));
 	}
 
 //	@PreAuthorize("authenticated()")
-	@GetMapping("/get/client/gst/{gst}")
-	public ResponseEntity<ApiResponse> getClientByGST(@PathVariable String gst){
-		Client client = userService.getClientByGST(gst.toUpperCase());
+	@GetMapping("/get/consignee/gst/{gst}")
+	public ResponseEntity<ApiResponse> getConsigneeByGST(@PathVariable String gst){
+		Consignee consignee = userService.getConsigneeByGST(gst.toUpperCase());
 		
-		if(client==null)
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, null, "Client with given gst not found"));
-		return ResponseEntity.ok(new ApiResponse(true, client, "Client Found"));
+		if(consignee==null)
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, null, "Consignee with given gst not found"));
+		return ResponseEntity.ok(new ApiResponse(true, consignee, "Consignee Found"));
 	}
 	
 
 //	@PreAuthorize("authenticated()")
-	@GetMapping("/get/client/id/{id}")
-	public ResponseEntity<ApiResponse> getClientById(@PathVariable Integer id){
-		Client client = userService.getClientById(id);
+	@GetMapping("/get/consignee/id/{id}")
+	public ResponseEntity<ApiResponse> getConsigneeById(@PathVariable Integer id){
+		Consignee consignee = userService.getConsigneeById(id);
 		
-		if(client==null)
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, null, "Client with given id not found"));
-		return ResponseEntity.ok(new ApiResponse(true, client, "Client Found"));
+		if(consignee==null)
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, null, "Consignee with given id not found"));
+		return ResponseEntity.ok(new ApiResponse(true, consignee, "Consignee Found"));
 	}
 	
 //	@PreAuthorize("authenticated()")
-	@GetMapping("/get/client/keyword/{keyword}")
-	public ResponseEntity<ApiResponse> searchClientByNameSubstring(@PathVariable String keyword){
-		List<Client> clients = userService.searchClientByNameSubstring(keyword);
+	@GetMapping("/get/consignee/keyword/{keyword}")
+	public ResponseEntity<ApiResponse> searchConsigneeByNameSubstring(@PathVariable String keyword){
+		List<Consignee> consignees = userService.searchConsigneeByNameSubstring(keyword);
 		
-		return ResponseEntity.ok(new ApiResponse(true, clients, "Retrieved Clients"));
+		return ResponseEntity.ok(new ApiResponse(true, consignees, "Retrieved Consignees"));
 	}
+	
+//	@PreAuthorize("hasAnyRole('ADMIN' , 'ACCOUNTANT')")
+	@GetMapping("/get/client/email/{email}")
+	public ResponseEntity<ApiResponse> getClientByEmail(@PathVariable String email){
+		User user = userService.getUserByEmailAndRole(email , Role.ROLE_CLIENT);
+		if(user==null)
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, null, "Client with given email id not found"));
+		return ResponseEntity.ok(new ApiResponse(true, user, "User Found"));
+	}
+	
+//	@PreAuthorize("authenticated()")
+	@GetMapping("/get/product/all")
+	public ResponseEntity<ApiResponse> getAllProduct(){
+		
+		List<Product> prods = prodService.getAllProduct();
+		return ResponseEntity.ok(new ApiResponse(true, prods, "Retrieved Products"));
+		
+	}
+	
+	
+//	@PreAuthorize("authenticated()")
+	@GetMapping("/get/product/id/{id}")
+	public ResponseEntity<ApiResponse> getProductById(@PathVariable Integer id){
+		
+		Product prod = prodService.getProductById(id);
+		if(prod==null)
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, null, "Product with given id not found"));
+		return ResponseEntity.ok(new ApiResponse(true, prod, "User Found"));
+		
+	}
+	
 
 	
 }

@@ -57,7 +57,7 @@ public class GlobalExceptionHandler {
     // Malformed JSON
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleMalformedJson(HttpMessageNotReadableException ex, HttpServletRequest request) {
-        ErrorResponse err = new ErrorResponse(LocalDateTime.now(), "Malformed JSON request", request.getRequestURI());
+        ErrorResponse err = new ErrorResponse(LocalDateTime.now(), "Malformed JSON request" + ex.getMessage(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
     }
 

@@ -85,9 +85,8 @@ public class JWTFilter extends OncePerRequestFilter
 	        }
 
 	        String userId = jwtutils.extractUserID(jwt);
-	        Optional<User> optionalUser = userService.getByEmail(userId);
-	        if (optionalUser.isPresent()) {
-	            User user = optionalUser.get();
+	        User user = userService.getUserByEmail(userId);
+	        if (user != null) {
 	            UsernamePasswordAuthenticationToken authToken =
 	                    new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
 	            SecurityContextHolder.getContext().setAuthentication(authToken);

@@ -1,0 +1,65 @@
+package com.smartbill360.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.smartbill360.entity.Consignee;
+import com.smartbill360.entity.TaxSlab;
+import com.smartbill360.exception.GSTAlreadyExistedException;
+import com.smartbill360.model.ApiResponse;
+import com.smartbill360.model.ConsigneeRegModel;
+import com.smartbill360.model.ProductRegModel;
+import com.smartbill360.model.TaxSlabRegModel;
+import com.smartbill360.service.ProductService;
+import com.smartbill360.service.UserService;
+
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("/acc")
+public class AccountantController {
+	
+	@Autowired
+	private UserService userService;
+	
+	private ProductService proService;
+	
+
+//	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@PostMapping("/add/consignee")
+	public ResponseEntity<ApiResponse> createConsignee(@RequestBody @Valid ConsigneeRegModel model) throws GSTAlreadyExistedException{
+		
+		Consignee consignee = userService.createConsignee(model);
+		
+		if(consignee!=null) {
+			return ResponseEntity.ok(new ApiResponse(true, null, "Client is created successfully"));
+		}else {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(false, null, "Client can not be created"));
+		}
+	}
+	
+	
+	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@PostMapping("/create/product")
+	public ResponseEntity<ApiResponse> createProduct(@RequestBody @Valid ProductRegModel model){
+		return null;
+	}
+	
+	/*-----------------------------------------*/
+	
+	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@PostMapping("/create/tax-slab")
+	public ResponseEntity<ApiResponse> createTaxSlab(@RequestBody @Valid TaxSlabRegModel model){
+		
+		TaxSlab taxSlab = proService.createTaxSlab(model);
+		
+		return null;
+	}
+	
+}

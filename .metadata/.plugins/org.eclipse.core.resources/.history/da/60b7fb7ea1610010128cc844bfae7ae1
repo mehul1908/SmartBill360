@@ -1,0 +1,38 @@
+package com.smartbill360.service;
+
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.smartbill360.entity.TaxSlab;
+import com.smartbill360.exception.TaxSlabAlreadyCreatedException;
+import com.smartbill360.model.TaxSlabRegModel;
+import com.smartbill360.repo.TaxSlabRepo;
+
+import jakarta.validation.Valid;
+
+
+@Service
+public class ProductService{
+	
+	@Autowired
+	private TaxSlabRepo taxSlabRepo;
+
+	public TaxSlab createTaxSlab(@Valid TaxSlabRegModel model) throws TaxSlabAlreadyCreatedException {
+	
+		Optional<TaxSlab> taxSlabOp = taxSlabRepo.findById(model.getSlab());
+		
+		if(taxSlabOp.isPresent()) {
+			TaxSlab taxSlab = new TaxSlab(model.getSlab(), model.getCgst(), model.getSgst(), model.getCess());
+			taxSlabRepo.save(taxSlab);
+			return taxSlab;
+		}
+		else {
+			String message = "Tax Slab " + model.getSlab() + " is already created";
+			throw new TaxSlabAlreadyCreatedException(message);
+		}
+		
+	}
+
+}

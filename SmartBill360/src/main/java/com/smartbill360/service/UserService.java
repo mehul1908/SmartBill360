@@ -9,14 +9,15 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.smartbill360.entity.Client;
+import com.smartbill360.entity.Consignee;
+import com.smartbill360.entity.Role;
 import com.smartbill360.entity.User;
 import com.smartbill360.exception.GSTAlreadyExistedException;
 import com.smartbill360.exception.UserAlreadyCreatedException;
-import com.smartbill360.model.ClientRegModel;
+import com.smartbill360.model.ConsigneeRegModel;
 import com.smartbill360.model.LoginModel;
 import com.smartbill360.model.RegisterModel;
-import com.smartbill360.repo.ClientRepo;
+import com.smartbill360.repo.ConsigneeRepo;
 import com.smartbill360.repo.UserRepo;
 
 import jakarta.validation.Valid;
@@ -28,29 +29,33 @@ public class UserService implements UserDetailsService {
 	private UserRepo userRepo;
 
 	@Autowired
-	private ClientRepo clientRepo;
+	private ConsigneeRepo consigneeRepo;
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		// TODO Auto-generated method stub
-		Optional<User> userOp = this.getByEmail(username);
-		if (userOp.isPresent())
-			return userOp.get();
+		User user = this.getUserByEmail(username);
+		if (user != null)
+			return user;
 		throw new UsernameNotFoundException("Invalid Email Id");
 	}
 
-	public Optional<User> getByEmail(String username) {
-		return userRepo.findById(username);
+	public User getUserByEmail(String username) {
+		Optional<User> userOp = userRepo.findById(username);
+		if (userOp.isEmpty())
+			return null;
+
+		return userOp.get();
 	}
 
 	public User saveUser(@Valid RegisterModel model) throws UserAlreadyCreatedException {
-		Optional<User> userOp = this.getByEmail(model.getEmail());
-		if (userOp.isPresent()) {
+		User user = this.getUserByEmail(model.getEmail());
+		if (user == null) {
 			String message = "User with email id " + model.getEmail() + " is already created";
 			throw new UserAlreadyCreatedException(message);
 		}
 		try {
-			User user = new User(model.getEmail(), model.getPassword(), model.getRole(), model.getName());
+			user = new User(model.getEmail(), model.getPassword(), model.getRole(), model.getName());
 			userRepo.save(user);
 			return user;
 		} catch (Exception ex) {
@@ -70,41 +75,57 @@ public class UserService implements UserDetailsService {
 		}
 	}
 
-	public Client createClient(@Valid ClientRegModel model) throws GSTAlreadyExistedException {
-		
-		Optional<Client> clientOp = clientRepo.findByGstin(model.getGstin());
-		if(clientOp.isEmpty()) {
-			Client client = new Client(model.getGstin(), model.getName(), model.getStateCode(), model.getEmail(),
-					model.getContact(), model.getAddress(), model.getIsRegular());
-			clientRepo.save(client);
-			return client;
+	public Consignee createConsignee(@Valid ConsigneeRegModel model) throws GSTAlreadyExistedException {
+
+		Optional<Consignee> consigneeOp = consigneeRepo.findByGstin(model.getGstin());
+		if (consigneeOp.isEmpty()) {
+			Consignee consignee = new Consignee(model.getGstin(), model.getName(), model.getStateCode(),
+					model.getEmail(), model.getContact(), model.getAddress(), model.getIsRegular());
+			consigneeRepo.save(consignee);
+			return consignee;
 		}
 		throw new GSTAlreadyExistedException(model.getGstin());
 
 	}
 
-	public List<Client> getAllClient() {
-		List<Client> clients = clientRepo.findAll();
-		return clients;
+	public List<Consignee> getAllConsignee() {
+		List<Consignee> consignees = consigneeRepo.findAll();
+		return consignees;
 	}
 
-	public Client getClientByGST(String gst) {
-		Optional<Client> clientOp = clientRepo.findByGstin(gst);
-		if(clientOp.isEmpty()) return null;
+	public Consignee getConsigneeByGST(String gst) {
+		Optional<Consignee> consigneeOp = consigneeRepo.findByGstin(gst);
+		if (consigneeOp.isEmpty())
+			return null;
+
+		return consigneeOp.get();
+	}
+
+	public Consignee getConsigneeById(Integer id) {
+		Optional<Consignee> consigneeOp = consigneeRepo.findById(id);
+		if (consigneeOp.isEmpty())
+			return null;
+
+		return consigneeOp.get();
+	}
+
+	public List<Consignee> searchConsigneeByNameSubstring(String keyword) {
+		List<Consignee> consignees = consigneeRepo.findByNameContainingIgnoreCase(keyword);
+		return consignees;
+	}
+
+	public User getUserByEmailAndRole(String email, Role roleClient) {
+		Optional<User> userOp = userRepo.findByEmailAndRole(email, roleClient);
+		if (userOp.isEmpty())
+			return null;
+
+		return userOp.get();
+	}
+
+	public List<User> getUserByRole(Role role) {
+		List<User> users = userRepo.findByRole(role);
+		return users;
 		
-		return clientOp.get();
-	}
-
-	public Client getClientById(Integer id) {
-		Optional<Client> clientOp = clientRepo.findById(id);
-		if(clientOp.isEmpty()) return null;
-		
-		return clientOp.get();
-	}
-
-	public List<Client> searchClientByNameSubstring(String keyword) {
-		List<Client> clients = clientRepo.findByNameContainingIgnoreCase(keyword);
-		return clients;
 	}
 
 }

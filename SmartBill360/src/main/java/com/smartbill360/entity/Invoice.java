@@ -22,7 +22,7 @@ public class Invoice {
 	private String invoiceNo;
 	
 	@ManyToOne
-	private Client consignee;
+	private Consignee consignee;
 	
 	private User consignor;
 	
@@ -37,7 +37,7 @@ public class Invoice {
 	
 	private User accountant;
 
-	public Invoice(String invoiceNo, Client consignee, User consignor , Float totalAmt, Float taxAmt , User accountant) {
+	public Invoice(String invoiceNo, Consignee consignee, User consignor , Float totalAmt, Float taxAmt , User accountant) {
 		super();
 		this.invoiceNo = invoiceNo;
 		this.consignee = consignee;
