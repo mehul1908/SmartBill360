@@ -1,7 +1,6 @@
 package com.smartbill360.config;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -37,14 +36,14 @@ public class JWTFilter extends OncePerRequestFilter
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException 
 	{
-		return true;
-//		String url = request.getRequestURI();
-//		log.info("Requested URL : " + url);
-//		return url.contains("/auth") || 
-//				url.contains("/swagger-ui") ||
-//				url.contains("/v3/api-docs") || 
-//				url.contains("/apidocs.html") ||
-//				url.contains("/login/oauth2/code/google");
+//		return true;
+		String url = request.getRequestURI();
+		log.info("Requested URL : " + url);
+		return url.contains("/auth") || 
+				url.contains("/swagger-ui") ||
+				url.contains("/v3/api-docs") || 
+				url.contains("/apidocs.html") ||
+				url.contains("/login/oauth2/code/google");
 	}
 	
 	@Override

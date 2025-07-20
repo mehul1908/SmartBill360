@@ -1,0 +1,20 @@
+package com.smartbill360.model;
+
+import com.smartbill360.entity.Consignee;
+import com.smartbill360.entity.User;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class InvoiceRegModel {
+
+	private Consignee consignee;
+	
+	private User consignor;
+	
+	private User accountant;
+}

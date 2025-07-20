@@ -72,4 +72,9 @@ public class ProductService{
 		return prodOp.get();
 	}
 
+	public List<Product> getProductByName(String name) {
+		List<Product> prods = prodRepo.findByNameContainingIgnoreCase(name);
+		return prods;
+	}
+
 }

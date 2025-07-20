@@ -1,0 +1,32 @@
+package com.smartbill360.model;
+
+import com.smartbill360.entity.Product;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+public class InvoiceItemRegModel {
+
+	@NotNull(message="Product cannot be null")
+	private Product product;
+	
+	@NotNull(message = "Quantity can not be null")
+	private Integer quantity;
+	
+	private Float rate;
+	
+	public InvoiceItemRegModel(Product product , Integer quantity , Float rate) {
+		this.product = product;
+		this.quantity = quantity;
+		
+		if(rate!=null) {
+			this.rate = rate;
+		}else {
+			this.rate = product.getRate();
+		}
+	}
+	
+}

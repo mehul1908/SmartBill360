@@ -1,7 +1,6 @@
 package com.smartbill360.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.smartbill360.entity.Consignee;
+import com.smartbill360.entity.Invoice;
 import com.smartbill360.entity.Product;
 import com.smartbill360.entity.TaxSlab;
 import com.smartbill360.exception.GSTAlreadyExistedException;
@@ -17,8 +17,10 @@ import com.smartbill360.exception.ProductAlreadyCreatedException;
 import com.smartbill360.exception.TaxSlabAlreadyCreatedException;
 import com.smartbill360.model.ApiResponse;
 import com.smartbill360.model.ConsigneeRegModel;
+import com.smartbill360.model.InvoiceRegModel;
 import com.smartbill360.model.ProductRegModel;
 import com.smartbill360.model.TaxSlabRegModel;
+import com.smartbill360.service.InvoiceService;
 import com.smartbill360.service.ProductService;
 import com.smartbill360.service.UserService;
 
@@ -33,6 +35,9 @@ public class AccountantController {
 	
 	@Autowired
 	private ProductService proService;
+	
+	@Autowired
+	private InvoiceService invoiceService;
 	
 
 //	@PreAuthorize("hasRole('ACCOUNTANT')")
@@ -75,5 +80,18 @@ public class AccountantController {
 			return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Tax Slab can not be created"));
 		}		
 	}
+	
+//	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@PostMapping("/create/invoice")
+	public ResponseEntity<ApiResponse> createInvoice(@RequestBody @Valid InvoiceRegModel model ){
+		Invoice invoice  = invoiceService.createInvoice(model);
+		if(invoice != null) {
+			return ResponseEntity.ok(new ApiResponse(true, null, "Invoice is created successfully"));
+		}else {
+			return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Invoice can not be created"));
+		}
+	}	
+	
+	// Change the createInvoice method firstly
 		
 }

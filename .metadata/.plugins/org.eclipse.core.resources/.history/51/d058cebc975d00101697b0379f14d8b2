@@ -1,7 +1,0 @@
-package com.smartbill360.exception;
-
-public class UserAlreadyCreatedException extends Exception{
-	
-	
-
-}

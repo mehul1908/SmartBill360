@@ -19,39 +19,60 @@ public class InvoiceItem {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private String invoiceItemId;
-	
+
 	@ManyToOne
 	private Invoice invoice;
-	
+
 	@ManyToOne
 	private Product product;
-	
+
 	private Integer quantity;
-	
+
 	private Float rate;
-	
+
 	private Float amt;
-	
+
 	private Float tax;
-	
+
 	private Float discInPer;
 
-	public InvoiceItem(String invoiceItemId, Invoice invoice, Product product, Integer quantity, Float rate,
-			Float discInPer) {
+	public InvoiceItem(Invoice invoice, Product product, Integer quantity, Float rate, Float discInPer) {
 		super();
-		this.invoiceItemId = invoiceItemId;
 		this.invoice = invoice;
 		this.product = product;
 		this.quantity = quantity;
-		this.rate = rate;
-		this.discInPer = discInPer;
-		
-		Float temp = rate*quantity;
-		
-		this.tax = temp*discInPer/100;
-		
-		this.amt = temp + this.tax;
+		if (rate != null)
+			this.rate = rate;
+		else
+			this.rate = this.product.getRate();
+
+		if (discInPer != null) {
+			this.discInPer = discInPer;
+		} else {
+			this.discInPer = 0.0f;
+		}
+
+		Float temp = this.rate * this.quantity;
+
+		Float tempRate = temp - (temp * this.discInPer / 100);
+
+		this.tax = tempRate * this.product.getTaxSlab().getSlab() / 100;
+
+		this.amt = tempRate + this.tax;
+
 	}
-	
-	
+
+	public void setRate(Float rate) {
+		if (rate != null) {
+			Float temp = this.rate * this.quantity;
+
+			Float tempRate = temp * this.discInPer / 100;
+
+			this.tax = tempRate * this.product.getTaxSlab().getSlab() / 100;
+
+			this.amt = tempRate + this.tax;
+		}
+
+	}
+
 }

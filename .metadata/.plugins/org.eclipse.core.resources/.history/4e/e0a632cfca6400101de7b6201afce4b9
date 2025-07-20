@@ -1,0 +1,38 @@
+package com.smartbill360.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
+import com.smartbill360.entity.Invoice;
+import com.smartbill360.entity.User;
+import com.smartbill360.exception.UnauthorizedUserException;
+import com.smartbill360.model.InvoiceRegModel;
+import com.smartbill360.repo.InvoiceRepo;
+
+import jakarta.validation.Valid;
+
+
+@Service
+public class InvoiceService{
+
+	@Autowired
+	private InvoiceRepo invoiceRepo;
+	
+	public Invoice createInvoice(@Valid InvoiceRegModel model) {
+		
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null && auth.getPrincipal() instanceof User accountant) {
+			
+			Invoice invoice = new Invoice(model.getConsignee(), model.getConsignor(), accountant);
+			invoiceRepo.save(invoice);
+			
+		}
+		else {
+			throw new UnauthorizedUserException("User is unauthentical or not valid");
+		}
+		return null;
+	}
+
+}
