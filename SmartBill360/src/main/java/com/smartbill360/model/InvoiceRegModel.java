@@ -2,9 +2,6 @@ package com.smartbill360.model;
 
 import java.util.List;
 
-import com.smartbill360.entity.Consignee;
-import com.smartbill360.entity.User;
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

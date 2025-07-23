@@ -32,9 +32,15 @@ public class InvoiceItem {
 
 	private Float amt;
 
-	private Float tax;
+	private Float cgst;
+
+	private Float sgst;
+
+	private Float cess;
 
 	private Float discInPer;
+	
+	private Float tax;
 
 	public InvoiceItem(Invoice invoice, Product product, Integer quantity, Float rate, Float discInPer) {
 		super();
@@ -56,22 +62,32 @@ public class InvoiceItem {
 
 		Float tempRate = temp - (temp * this.discInPer / 100);
 
-		this.tax = tempRate * this.product.getTaxSlab().getSlab() / 100;
+		this.cess = tempRate * this.product.getTaxSlab().getCess() / 100;
+
+		this.cgst = tempRate * this.product.getTaxSlab().getCgst() / 100;
+
+		this.sgst = tempRate * this.product.getTaxSlab().getSgst() / 100;
+		
+		this.tax = this.cess + this.cgst + this.sgst;
 
 		this.amt = tempRate + this.tax;
 
 	}
 
 	public void setRate(Float rate) {
-		if (rate != null) {
-			Float temp = this.rate * this.quantity;
+		Float temp = this.rate * this.quantity;
 
-			Float tempRate = temp * this.discInPer / 100;
+		Float tempRate = temp - (temp * this.discInPer / 100);
 
-			this.tax = tempRate * this.product.getTaxSlab().getSlab() / 100;
+		this.cess = tempRate * this.product.getTaxSlab().getCess() / 100;
 
-			this.amt = tempRate + this.tax;
-		}
+		this.cgst = tempRate * this.product.getTaxSlab().getCgst() / 100;
+
+		this.sgst = tempRate * this.product.getTaxSlab().getSgst() / 100;
+
+		this.tax = this.cess + this.cgst + this.sgst;
+
+		this.amt = tempRate + this.tax;
 
 	}
 

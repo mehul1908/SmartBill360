@@ -1,0 +1,228 @@
+package com.smartbill360.utilities;
+
+import java.io.ByteArrayOutputStream;
+import java.text.NumberFormat;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Locale;
+
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.borders.Border;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
+import com.smartbill360.entity.Consignee;
+import com.smartbill360.entity.Invoice;
+import com.smartbill360.entity.InvoiceItem;
+
+public class InvoicePDFGenerator {
+
+	public static byte[] createInvoicePDF(Invoice invoice, Consignee consignee, List<InvoiceItem> items) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PdfWriter writer = new PdfWriter(baos);
+		PdfDocument pdf = new PdfDocument(writer);
+		Document document = new Document(pdf);
+
+		// Header Title
+		document.add(new Paragraph("INVOICE").setBold().setFontSize(20).setTextAlignment(TextAlignment.CENTER));
+
+		document.setBorder(Border.SOLID)
+		// Header Invoice Info
+		Table headerTable = new Table(UnitValue.createPercentArray(new float[] { 70, 30 })).useAllAvailableWidth()
+				.setBorderLeft(Border.NO_BORDER);
+
+		headerTable.addCell(emptyCell().setBorder(Border.NO_BORDER));
+		headerTable.addCell(new Cell().add(new Paragraph("Invoice No: " + invoice.getInvoiceNo()))
+				.add(new Paragraph("Date: " + invoice.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))))
+				.setTextAlignment(TextAlignment.RIGHT).setBorder(Border.NO_BORDER));
+		document.add(headerTable);
+
+		// Party Details
+		Table partyDetail = new Table(UnitValue.createPercentArray(new float[] { 50, 50 })).useAllAvailableWidth();
+		partyDetail.addHeaderCell(boldCell("Consignor Details:"));
+		partyDetail.addHeaderCell(boldCell("Consignee Details:"));
+
+		partyDetail.addCell(detailCell(ConsignorDetail.getName(), ConsignorDetail.getGst(),
+				ConsignorDetail.getPhoneNo(), ConsignorDetail.getAddress(), ConsignorDetail.getEmail()));
+		partyDetail.addCell(detailCell(consignee.getName(), consignee.getGstin(), consignee.getContact(),
+				consignee.getAddress(), consignee.getEmail()));
+		document.add(partyDetail);
+		document.add(new Paragraph("\n"));
+
+		// Invoice Items Table
+		Table table = new Table(UnitValue.createPercentArray(new float[] { 1, 5, 1.5f, 1, 1, 2, 2, 1, 2 }))
+				.useAllAvailableWidth();
+
+		String[] headers = { "", "Product Name", "HSN Code", "Qty", "Tax%", "Rate/Item", "Tax Amt", "Disc%", "Amount" };
+		for (String header : headers)
+			table.addHeaderCell(boldCell(header).setTextAlignment(TextAlignment.CENTER).setBorderLeft(Border.NO_BORDER)
+					.setBorderRight(Border.NO_BORDER).setTextAlignment(TextAlignment.CENTER));
+
+		Float ro = Math.round(invoice.getTotalAmt()) - invoice.getTotalAmt();
+
+		int counter = 1, totalQty = 0;
+
+		Float cgst = 0f, sgst = 0f, cess = 0f;
+
+		for (InvoiceItem item : items) {
+			table.addCell(cell(String.valueOf(counter++)));
+			table.addCell(cell(item.getProduct().getName()));
+			table.addCell(cell(item.getProduct().getHsnCode()));
+			table.addCell(cell(String.valueOf(item.getQuantity())));
+			table.addCell(cell(String.format("%.0f", item.getProduct().getTaxSlab().getSlab())));
+			table.addCell(cell(String.format("%.2f", item.getRate())));
+			table.addCell(cell(String.format("%.2f", item.getTax())));
+			table.addCell(cell(String.format("%.2f", item.getDiscInPer())));
+			table.addCell(cell(String.format("%.2f", item.getAmt())));
+			totalQty += item.getQuantity();
+			cgst += item.getCgst();
+			sgst += item.getSgst();
+			cess += item.getCess();
+		}
+
+		// Round Off Row
+		table.addCell(cell(""));
+		table.addCell(cell("Round Off"));
+		table.addCell(cell(""));
+		table.addCell(cell(""));
+		table.addCell(cell(""));
+		table.addCell(cell(""));
+		table.addCell(cell(""));
+		table.addCell(cell(""));
+		table.addCell(cell(formatAmount(ro)));
+
+		// Totals Row
+		table.addCell(cell(""));
+		table.addCell(boldCell("Total").setBorderLeft(Border.NO_BORDER).setBorderRight(Border.NO_BORDER)
+				.setTextAlignment(TextAlignment.CENTER));
+		table.addCell(cell(""));
+		table.addCell(cell(String.valueOf(totalQty)));
+		table.addCell(cell(""));
+		table.addCell(cell(""));
+		table.addCell(cell(formatAmount(invoice.getTaxAmt())));
+		table.addCell(cell(""));
+		table.addCell(cell(formatAmount(Math.round(invoice.getTotalAmt()))));
+
+		document.add(table);
+		document.add(new Paragraph("Total Payable Amount in Words : ").setBold());
+		document.add(new Paragraph(convertRupeesToWords(Math.round(invoice.getTotalAmt()))));
+		document.add(new Paragraph("\n\n\n"));
+
+		document.add(new Cell().add(new Paragraph("Tax Summary")).setBold().setTextAlignment(TextAlignment.CENTER)
+				.setUnderline());
+
+		// Tax Summary
+		Table taxSumm = new Table(UnitValue.createPercentArray(new float[] { 1, 1, 1, 1 })).useAllAvailableWidth();
+		taxSumm.addHeaderCell(boldCell("CGST").setTextAlignment(TextAlignment.CENTER).setBorderLeft(Border.NO_BORDER)
+				.setBorderRight(Border.NO_BORDER).setTextAlignment(TextAlignment.CENTER));
+		taxSumm.addHeaderCell(boldCell("SGST").setTextAlignment(TextAlignment.CENTER).setBorderLeft(Border.NO_BORDER)
+				.setBorderRight(Border.NO_BORDER).setTextAlignment(TextAlignment.CENTER));
+		taxSumm.addHeaderCell(boldCell("CESS").setTextAlignment(TextAlignment.CENTER).setBorderLeft(Border.NO_BORDER)
+				.setBorderRight(Border.NO_BORDER).setTextAlignment(TextAlignment.CENTER));
+		taxSumm.addHeaderCell(
+				boldCell("Total Tax").setTextAlignment(TextAlignment.CENTER).setBorderLeft(Border.NO_BORDER)
+						.setBorderRight(Border.NO_BORDER).setTextAlignment(TextAlignment.CENTER));
+
+		taxSumm.addCell(cell(formatAmount(cgst)));
+		taxSumm.addCell(cell(formatAmount(sgst)));
+		taxSumm.addCell(cell(formatAmount(cess)));
+		taxSumm.addCell(cell(formatAmount(invoice.getTaxAmt())));
+
+		document.add(taxSumm);
+		document.add(new Paragraph("Total Tax Amount in Words : ").setBold());
+		document.add(new Paragraph(convertRupeesToWords(invoice.getTaxAmt())));
+
+
+		document.close();
+		return baos.toByteArray();
+	}
+
+	// ------------------ Helper Methods ------------------
+
+	private static Cell cell(String text) {
+		return new Cell().add(new Paragraph(text)).setBorderLeft(Border.NO_BORDER).setBorderRight(Border.NO_BORDER)
+				.setTextAlignment(TextAlignment.CENTER);
+	}
+
+	private static Cell boldCell(String text) {
+		return new Cell().add(new Paragraph(text).setBold());
+	}
+
+	private static Cell emptyCell() {
+		return new Cell().add(new Paragraph());
+	}
+
+	private static Cell detailCell(String name, String gst, String phone, String address, String email) {
+		return new Cell().add(new Paragraph("Name : " + name)).add(new Paragraph("GST : " + gst))
+				.add(new Paragraph("Phone No. : " + phone)).add(new Paragraph("Address : " + address))
+				.add(new Paragraph("Email : " + email));
+	}
+
+	private static String formatAmount(float amount) {
+		NumberFormat format = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
+		return format.format(amount);
+	}
+
+	private static final String[] units = { "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+			"Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen",
+			"Nineteen" };
+
+	private static final String[] tens = { "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty",
+			"Ninety" };
+
+	private static String convertBelowThousand(int number) {
+		String result = "";
+		if (number >= 100) {
+			result += units[number / 100] + " Hundred ";
+			number %= 100;
+		}
+		if (number >= 20) {
+			result += tens[number / 10] + " ";
+			number %= 10;
+		}
+		if (number > 0) {
+			result += units[number] + " ";
+		}
+		return result.trim();
+	}
+
+	private static String convertNumberToWords(int number) {
+		if (number == 0)
+			return "Zero";
+
+		StringBuilder sb = new StringBuilder();
+
+		if (number / 10000000 > 0) {
+			sb.append(convertBelowThousand(number / 10000000)).append(" Crore ");
+			number %= 10000000;
+		}
+		if (number / 100000 > 0) {
+			sb.append(convertBelowThousand(number / 100000)).append(" Lakh ");
+			number %= 100000;
+		}
+		if (number / 1000 > 0) {
+			sb.append(convertBelowThousand(number / 1000)).append(" Thousand ");
+			number %= 1000;
+		}
+		if (number > 0) {
+			sb.append(convertBelowThousand(number));
+		}
+
+		return sb.toString().trim();
+	}
+
+	public static String convertRupeesToWords(float amount) {
+		int rupees = (int) amount;
+		int paise = Math.round((amount - rupees) * 100);
+
+		String rupeePart = convertNumberToWords(rupees) + " Rupees";
+		String paisePart = (paise > 0) ? " and " + convertNumberToWords(paise) + " Paise" : "";
+
+		return rupeePart + paisePart + " Only";
+	}
+
+}

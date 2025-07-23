@@ -6,7 +6,6 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.smartbill360.entity.Consignee;
 import com.smartbill360.entity.Product;
 import com.smartbill360.entity.TaxSlab;
 import com.smartbill360.exception.ProductAlreadyCreatedException;

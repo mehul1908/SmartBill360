@@ -1,5 +1,8 @@
 package com.smartbill360.service;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,6 +17,7 @@ import com.smartbill360.model.InvoiceItemRegModel;
 import com.smartbill360.model.InvoiceRegModel;
 import com.smartbill360.repo.InvoiceItemRepo;
 import com.smartbill360.repo.InvoiceRepo;
+import com.smartbill360.utilities.InvoicePDFGenerator;
 
 import jakarta.validation.Valid;
 
@@ -33,7 +37,7 @@ public class InvoiceService{
 	@Autowired
 	private ProductService  prodService;
 	
-	public Invoice createInvoice(@Valid InvoiceRegModel model) {
+	public String createInvoice(@Valid InvoiceRegModel model) {
 		
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth != null && auth.getPrincipal() instanceof User accountant) {
@@ -46,22 +50,56 @@ public class InvoiceService{
 			
 			for(InvoiceItemRegModel itemModel : model.getProducts()) {
 				InvoiceItem invItem = new InvoiceItem(invoice, prodService.getProductById(itemModel.getProductId()), itemModel.getQuantity(), itemModel.getRate(), itemModel.getDiscInPer());
+				invItemRepo.save(invItem);
 				totalAmt += invItem.getAmt();
 				taxAmt += invItem.getTax();
-				invItemRepo.save(invItem);
 			}
 			
 			invoice.setTaxAmt(taxAmt);
 			invoice.setTotalAmt(totalAmt);
 			
 			invoiceRepo.save(invoice);
-			return invoice;
+			
+			List<InvoiceItem> items = this.getProductItemByInvoice(invoice);
+			
+			String pdf = InvoicePDFGenerator.createInvoicePDF(invoice, invoice.getConsignee(), items);
+			
+			return pdf;
 			}
 			catch(Exception ex) {
 				invoiceRepo.delete(invoice);
 				throw ex;
 			}
 			
+		}
+		else {
+			throw new UnauthorizedUserException("User is unauthentical or not valid");
+		}
+	}
+
+	public List<InvoiceItem> getProductItemByInvoice(Invoice invoice) {
+		List<InvoiceItem> items = invItemRepo.findByInvoice(invoice);
+		return items;
+	}
+
+	public Invoice getInvoiceById(Integer id) {
+		
+		Optional<Invoice> inv = invoiceRepo.findById(id);
+		if(inv.isPresent())
+			return inv.get();
+		else
+			return null;
+		
+	}
+
+	public boolean isUserRelatedToInvoice(Invoice invoice) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null && auth.getPrincipal() instanceof User user) {
+			if(user.getRole().equals(Role.ROLE_ADMIN))
+				return true;
+			if(invoice.getAccountant().equals(user) || invoice.getConsignor().equals(user))
+				return true;
+			return false;
 		}
 		else {
 			throw new UnauthorizedUserException("User is unauthentical or not valid");

@@ -1,0 +1,35 @@
+package com.smartbill360.utilities;
+
+public class ConsignorDetail {
+
+	private static String name = "Narmada Shree Agency";
+	
+	private static String gst = "23QWERT0239K14";
+	
+	private static String phoneNo = "+91 99999 99999";
+	
+	private static String address = "25 Kanwar Colony \n Barwaha";
+	
+	private static String email = "narmadashree@gmail.com";
+
+	public static String getName() {
+		return name;
+	}
+
+	public static String getGst() {
+		return gst;
+	}
+
+	public static String getPhoneNo() {
+		return phoneNo;
+	}
+
+	public static String getAddress() {
+		return address;
+	}
+
+	public static String getEmail() {
+		return email;
+	}
+	
+}

@@ -1,0 +1,74 @@
+package com.smartbill360.utilities;
+
+import java.io.ByteArrayOutputStream;
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.HorizontalAlignment;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
+import com.smartbill360.entity.InvoiceItem;
+
+public class InvoicePDFGenerator {
+	
+	public static byte[] createInvoicePDF(Integer invoiceId , String consigneeName , String consignorName , List<InvoiceItem> items 
+			, Float cgst , Float sgst ,Float cess ,  Float total , LocalDate date) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PdfWriter writer = new PdfWriter(baos);
+		PdfDocument pdf = new PdfDocument(writer);
+		Document document = new Document(pdf);
+		
+		document.add(
+				new Paragraph("INVOICE").setBold().setFontSize(20).setTextAlignment(TextAlignment.CENTER)
+				);
+		
+		document.add(new Paragraph("Invoice No:" + invoiceId).setHorizontalAlignment(HorizontalAlignment.RIGHT));
+		document.add(new Paragraph("Date: " + date).setHorizontalAlignment(HorizontalAlignment.LEFT));
+        document.add(new Paragraph("Billed To: " + consigneeName));
+        document.add(new Paragraph("\n"));
+        
+     // Table: Product, Qty, Price, Tax, Total
+        Table table = new Table(UnitValue.createPercentArray(new float[]{1, 5, 1, 1, 1, 2, 2, 1, 2}))
+        	    .useAllAvailableWidth();
+
+        	table.addHeaderCell("S.No").setBold().setTextAlignment(TextAlignment.CENTER);
+        	table.addHeaderCell("Product Name").setBold().setTextAlignment(TextAlignment.CENTER);
+        	table.addHeaderCell("HSN Code").setBold().setTextAlignment(TextAlignment.CENTER);
+        	table.addHeaderCell("Qty").setBold().setTextAlignment(TextAlignment.CENTER);
+        	table.addHeaderCell("Tax %").setBold().setTextAlignment(TextAlignment.CENTER);
+        	table.addHeaderCell("Rate").setBold().setTextAlignment(TextAlignment.CENTER);
+        	table.addHeaderCell("Tax Amt").setBold().setTextAlignment(TextAlignment.CENTER);
+        	table.addHeaderCell("Disc %").setBold().setTextAlignment(TextAlignment.CENTER);
+        	table.addHeaderCell("Amount").setBold().setTextAlignment(TextAlignment.CENTER);
+
+        
+
+        for (InvoiceItem item : items) {
+            
+        }
+
+        document.add(table);
+        document.add(new Paragraph("\n"));
+
+        // Tax Summary
+        document.add(new Paragraph("CGST: ₹" + String.format("%.2f", cgst)));
+        document.add(new Paragraph("SGST: ₹" + String.format("%.2f", sgst)));
+        document.add(new Paragraph("CESS: ₹" + String.format("%.2f", cess)));
+        document.add(new Paragraph("\n"));
+
+        document.add(new Paragraph("Grand Total: ₹" + String.format("%.2f", total))
+                .setBold().setFontSize(14));
+
+        document.close();
+        return baos.toByteArray();
+	}
+	
+}
