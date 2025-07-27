@@ -3,7 +3,6 @@ package com.smartbill360.utilities;
 import java.io.ByteArrayOutputStream;
 import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
-import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
 
@@ -23,7 +22,7 @@ import com.smartbill360.entity.InvoiceItem;
 
 public class InvoicePDFGenerator {
 
-	public static String createInvoicePDF(Invoice invoice, Consignee consignee, List<InvoiceItem> items) {
+	public static byte[] createInvoicePDF(Invoice invoice, Consignee consignee, List<InvoiceItem> items) {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PdfWriter writer = new PdfWriter(baos);
 		PdfDocument pdf = new PdfDocument(writer);
@@ -145,7 +144,8 @@ public class InvoicePDFGenerator {
 
 
 		document.close();
-		return Base64.getEncoder().encodeToString(baos.toByteArray());
+		return baos.toByteArray();
+		
 	}
 
 	// ------------------ Helper Methods ------------------

@@ -1,25 +1,36 @@
 package com.smartbill360.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.smartbill360.entity.Consignee;
+import com.smartbill360.entity.OtpToken;
 import com.smartbill360.entity.Role;
 import com.smartbill360.entity.User;
 import com.smartbill360.exception.GSTAlreadyExistedException;
+import com.smartbill360.exception.UnauthorizedUserException;
 import com.smartbill360.exception.UserAlreadyCreatedException;
 import com.smartbill360.model.ConsigneeRegModel;
 import com.smartbill360.model.LoginModel;
+import com.smartbill360.model.OtpModel;
 import com.smartbill360.model.RegisterModel;
+import com.smartbill360.model.UpdateUserModel;
 import com.smartbill360.repo.ConsigneeRepo;
+import com.smartbill360.repo.OtpTokenRepo;
 import com.smartbill360.repo.UserRepo;
+import com.smartbill360.utilities.EmailMessage;
 
+import jakarta.mail.MessagingException;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
 @Service
@@ -30,6 +41,12 @@ public class UserService implements UserDetailsService {
 
 	@Autowired
 	private ConsigneeRepo consigneeRepo;
+	
+	@Autowired
+	private OtpTokenRepo otpRepo;
+	
+	@Autowired
+	private EmailMessage emailMessage;
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -127,5 +144,96 @@ public class UserService implements UserDetailsService {
 		return users;
 		
 	}
+
+	public void updatePassword(String newPassword) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null && auth.getPrincipal() instanceof User user) {
+			user.setPassword(newPassword);
+			userRepo.save(user);
+		}else {
+			throw new UnauthorizedUserException("User is unauthentical or not valid");
+		}
+	}
+	
+	@Transactional
+	public void forgetPassword() throws MessagingException {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			if (auth != null && auth.getPrincipal() instanceof User user) {
+				
+				Optional<OtpToken> otpOpt = otpRepo.findByUser(user);
+				OtpToken otp = null;
+				if(otpOpt.isEmpty()) {
+					otp = new OtpToken(user);
+					otpRepo.save(otp);
+				}
+				else {
+					otp = otpOpt.get();
+					otp.generateOtp();
+					otpRepo.save(otp);
+				}
+				emailMessage.sendPasswordResetEmail(user.getEmail(), user.getName(), otp.getOtp());
+				
+				return;
+			}else {
+				throw new UnauthorizedUserException("User is unauthentical or not valid");
+			}
+	}
+
+	public Boolean verifyOtp(@Valid OtpModel otp) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+	    if (auth != null && auth.getPrincipal() instanceof User user) {
+	        Optional<OtpToken> otpOp = otpRepo.findByUserAndExpiryAfterAndIsUsedFalse(user, LocalDateTime.now());
+
+	        if (otpOp.isEmpty()) {
+	            return false; // No active OTP
+	        }
+
+	        OtpToken otpToken = otpOp.get();
+
+	        // Check for maximum retry attempts
+	        if (otpToken.getAttempt() >= 3) {
+	            throw new RuntimeException("Too many incorrect attempts. OTP locked.");
+	        }
+
+	        // Check OTP match
+	        if (otpToken.getOtp().equals(otp.getOtp())) {
+	            otpToken.setIsUsed(true); // mark as used
+	            otpRepo.save(otpToken);
+	            return true;
+	        } else {
+	            // increment attempt and save
+	            otpToken.setAttempt(otpToken.getAttempt() + 1);
+	            otpRepo.save(otpToken);
+	            return false;
+	        }
+
+	    } else {
+	        throw new UnauthorizedUserException("User is unauthenticated or not valid.");
+	    }
+	}
+
+	public User updateUser(UpdateUserModel model) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null && auth.getPrincipal() instanceof User user) {
+			
+			if(model.getName()!=null)
+				user.setName(model.getName());
+			userRepo.save(user);
+			return user;
+		}
+		else {
+			throw new UnauthorizedUserException("User is unauthentical or not valid");
+		}
+	}
+
+	@Transactional
+	public User deactivate(User user) {
+		user.setIsActive(false);
+		userRepo.save(user);
+		return user;
+	}
+	
+	
 
 }

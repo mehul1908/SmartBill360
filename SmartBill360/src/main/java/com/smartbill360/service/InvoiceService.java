@@ -21,58 +21,57 @@ import com.smartbill360.utilities.InvoicePDFGenerator;
 
 import jakarta.validation.Valid;
 
-
 @Service
-public class InvoiceService{
+public class InvoiceService {
 
 	@Autowired
 	private InvoiceRepo invoiceRepo;
-	
+
 	@Autowired
 	private InvoiceItemRepo invItemRepo;
-	
+
 	@Autowired
 	private UserService userService;
-	
+
 	@Autowired
-	private ProductService  prodService;
-	
-	public String createInvoice(@Valid InvoiceRegModel model) {
-		
+	private ProductService prodService;
+
+	public byte[] createInvoice(@Valid InvoiceRegModel model) {
+
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth != null && auth.getPrincipal() instanceof User accountant) {
-			
-			Invoice invoice = new Invoice(userService.getConsigneeById(model.getConsigneeId()), userService.getUserByEmailAndRole(model.getConsignorEmail() , Role.ROLE_CLIENT), accountant);
+
+			Invoice invoice = new Invoice(userService.getConsigneeById(model.getConsigneeId()),
+					userService.getUserByEmailAndRole(model.getConsignorEmail(), Role.ROLE_CLIENT), accountant);
 			invoiceRepo.save(invoice);
 			try {
-			Float totalAmt = 0.0f;
-			Float taxAmt = 0.0f;
-			
-			for(InvoiceItemRegModel itemModel : model.getProducts()) {
-				InvoiceItem invItem = new InvoiceItem(invoice, prodService.getProductById(itemModel.getProductId()), itemModel.getQuantity(), itemModel.getRate(), itemModel.getDiscInPer());
-				invItemRepo.save(invItem);
-				totalAmt += invItem.getAmt();
-				taxAmt += invItem.getTax();
-			}
-			
-			invoice.setTaxAmt(taxAmt);
-			invoice.setTotalAmt(totalAmt);
-			
-			invoiceRepo.save(invoice);
-			
-			List<InvoiceItem> items = this.getProductItemByInvoice(invoice);
-			
-			String pdf = InvoicePDFGenerator.createInvoicePDF(invoice, invoice.getConsignee(), items);
-			
-			return pdf;
-			}
-			catch(Exception ex) {
+				Float totalAmt = 0.0f;
+				Float taxAmt = 0.0f;
+
+				for (InvoiceItemRegModel itemModel : model.getProducts()) {
+					InvoiceItem invItem = new InvoiceItem(invoice, prodService.getProductById(itemModel.getProductId()),
+							itemModel.getQuantity(), itemModel.getRate(), itemModel.getDiscInPer());
+					invItemRepo.save(invItem);
+					totalAmt += invItem.getAmt();
+					taxAmt += invItem.getTax();
+				}
+
+				invoice.setTaxAmt(taxAmt);
+				invoice.setTotalAmt(totalAmt);
+
+				invoiceRepo.save(invoice);
+
+				List<InvoiceItem> items = this.getProductItemByInvoice(invoice);
+
+				byte[] pdf = InvoicePDFGenerator.createInvoicePDF(invoice, invoice.getConsignee(), items);
+
+				return pdf;
+			} catch (Exception ex) {
 				invoiceRepo.delete(invoice);
 				throw ex;
 			}
-			
-		}
-		else {
+
+		} else {
 			throw new UnauthorizedUserException("User is unauthentical or not valid");
 		}
 	}
@@ -83,25 +82,24 @@ public class InvoiceService{
 	}
 
 	public Invoice getInvoiceById(Integer id) {
-		
+
 		Optional<Invoice> inv = invoiceRepo.findById(id);
-		if(inv.isPresent())
+		if (inv.isPresent())
 			return inv.get();
 		else
 			return null;
-		
+
 	}
 
 	public boolean isUserRelatedToInvoice(Invoice invoice) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth != null && auth.getPrincipal() instanceof User user) {
-			if(user.getRole().equals(Role.ROLE_ADMIN))
+			if (user.getRole().equals(Role.ROLE_ADMIN))
 				return true;
-			if(invoice.getAccountant().equals(user) || invoice.getConsignor().equals(user))
+			if (invoice.getAccountant().equals(user) || invoice.getConsignor().equals(user))
 				return true;
 			return false;
-		}
-		else {
+		} else {
 			throw new UnauthorizedUserException("User is unauthentical or not valid");
 		}
 	}

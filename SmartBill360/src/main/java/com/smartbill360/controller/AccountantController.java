@@ -12,14 +12,17 @@ import org.springframework.web.bind.annotation.RestController;
 import com.smartbill360.entity.Consignee;
 import com.smartbill360.entity.Product;
 import com.smartbill360.entity.TaxSlab;
+
 import com.smartbill360.exception.GSTAlreadyExistedException;
 import com.smartbill360.exception.ProductAlreadyCreatedException;
 import com.smartbill360.exception.TaxSlabAlreadyCreatedException;
+
 import com.smartbill360.model.ApiResponse;
 import com.smartbill360.model.ConsigneeRegModel;
 import com.smartbill360.model.InvoiceRegModel;
 import com.smartbill360.model.ProductRegModel;
 import com.smartbill360.model.TaxSlabRegModel;
+
 import com.smartbill360.service.InvoiceService;
 import com.smartbill360.service.ProductService;
 import com.smartbill360.service.UserService;
@@ -40,7 +43,7 @@ public class AccountantController {
 	private InvoiceService invoiceService;
 	
 
-//	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@PreAuthorize("hasRole('ACCOUNTANT')")
 	@PostMapping("/create/consignee")
 	public ResponseEntity<ApiResponse> createConsignee(@RequestBody @Valid ConsigneeRegModel model) throws GSTAlreadyExistedException{
 		
@@ -54,7 +57,7 @@ public class AccountantController {
 	}
 	
 	
-//	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@PreAuthorize("hasRole('ACCOUNTANT')")
 	@PostMapping("/create/product")
 	public ResponseEntity<ApiResponse> createProduct(@RequestBody @Valid ProductRegModel model) throws ProductAlreadyCreatedException{
 		Product prod = proService.createProduct(model);
@@ -68,7 +71,7 @@ public class AccountantController {
 	
 	/*-----------------------------------------*/
 	
-//	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@PreAuthorize("hasRole('ACCOUNTANT')")
 	@PostMapping("/create/tax-slab")
 	public ResponseEntity<ApiResponse> createTaxSlab(@RequestBody @Valid TaxSlabRegModel model) throws TaxSlabAlreadyCreatedException{
 		
@@ -81,10 +84,10 @@ public class AccountantController {
 		}		
 	}
 	
-//	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@PreAuthorize("hasRole('ACCOUNTANT')")
 	@PostMapping("/create/invoice")
 	public ResponseEntity<ApiResponse> createInvoice(@RequestBody @Valid InvoiceRegModel model ){
-		String pdf  = invoiceService.createInvoice(model);
+		byte[] pdf  = invoiceService.createInvoice(model);
 		if(pdf != null) {
 			return ResponseEntity.ok()
 			        .body(new ApiResponse(true, pdf, "Invoice created successfully"));
@@ -92,7 +95,5 @@ public class AccountantController {
 			return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Invoice can not be created"));
 		}
 	}	
-	
-	// Change the createInvoice method firstly
-		
+			
 }
