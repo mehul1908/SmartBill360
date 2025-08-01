@@ -12,6 +12,7 @@ import com.smartbill360.entity.Invoice;
 import com.smartbill360.entity.InvoiceItem;
 import com.smartbill360.entity.Role;
 import com.smartbill360.entity.User;
+import com.smartbill360.exception.InvoiceNotFoundException;
 import com.smartbill360.exception.UnauthorizedUserException;
 import com.smartbill360.model.InvoiceItemRegModel;
 import com.smartbill360.model.InvoiceRegModel;
@@ -41,31 +42,11 @@ public class InvoiceService {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth != null && auth.getPrincipal() instanceof User accountant) {
 
-			Invoice invoice = new Invoice(userService.getConsigneeById(model.getConsigneeId()),
+			Invoice invoice = new Invoice(userService.getConsigneeById(model.getConsigneeId(), true),
 					userService.getUserByEmailAndRole(model.getConsignorEmail(), Role.ROLE_CLIENT), accountant);
 			invoiceRepo.save(invoice);
 			try {
-				Float totalAmt = 0.0f;
-				Float taxAmt = 0.0f;
-
-				for (InvoiceItemRegModel itemModel : model.getProducts()) {
-					InvoiceItem invItem = new InvoiceItem(invoice, prodService.getProductById(itemModel.getProductId()),
-							itemModel.getQuantity(), itemModel.getRate(), itemModel.getDiscInPer());
-					invItemRepo.save(invItem);
-					totalAmt += invItem.getAmt();
-					taxAmt += invItem.getTax();
-				}
-
-				invoice.setTaxAmt(taxAmt);
-				invoice.setTotalAmt(totalAmt);
-
-				invoiceRepo.save(invoice);
-
-				List<InvoiceItem> items = this.getProductItemByInvoice(invoice);
-
-				byte[] pdf = InvoicePDFGenerator.createInvoicePDF(invoice, invoice.getConsignee(), items);
-
-				return pdf;
+				return this.addProductItem(invoice, model.getProducts());
 			} catch (Exception ex) {
 				invoiceRepo.delete(invoice);
 				throw ex;
@@ -74,6 +55,29 @@ public class InvoiceService {
 		} else {
 			throw new UnauthorizedUserException("User is unauthentical or not valid");
 		}
+	}
+
+	private byte[] addProductItem(Invoice invoice, List<InvoiceItemRegModel> products) {
+		Float totalAmt = 0.0f;
+		Float taxAmt = 0.0f;
+
+		for (InvoiceItemRegModel itemModel : products) {
+			InvoiceItem invItem = new InvoiceItem(invoice, prodService.getProductById(itemModel.getProductId() , true),
+					itemModel.getQuantity(), itemModel.getRate(), itemModel.getDiscInPer());
+			invItemRepo.save(invItem);
+			totalAmt += invItem.getAmt();
+			taxAmt += invItem.getTax();
+		}
+
+		invoice.setTaxAmt(taxAmt);
+		invoice.setTotalAmt(totalAmt);
+
+		invoiceRepo.save(invoice);
+
+		List<InvoiceItem> items = this.getProductItemByInvoice(invoice);
+
+		byte[] pdf = InvoicePDFGenerator.createInvoicePDF(invoice, invoice.getConsignee(), items);
+		return pdf;
 	}
 
 	public List<InvoiceItem> getProductItemByInvoice(Invoice invoice) {
@@ -102,6 +106,60 @@ public class InvoiceService {
 		} else {
 			throw new UnauthorizedUserException("User is unauthentical or not valid");
 		}
+	}
+
+	public Invoice getInvoiceById(Integer invoiceId, boolean isActive) {
+		Optional<Invoice> inv = invoiceRepo.findByInvoiceNoAndIsActive(invoiceId, isActive);
+		if (inv.isPresent())
+			return inv.get();
+		else
+			return null;
+	}
+
+	public Invoice updateInvoice(Integer invoiceId, @Valid InvoiceRegModel model) throws InvoiceNotFoundException {
+
+		try {
+			Invoice invoice = this.getInvoiceById(invoiceId, true);
+
+			if(!this.isUserRelatedToInvoice(invoice))
+				throw new UnauthorizedUserException("You are not authorized to make changes in given invoice");
+			
+			if (invoice == null) {
+				throw new InvoiceNotFoundException();
+			}
+
+			if (model.getConsigneeId() != null)
+				invoice.setConsignee(userService.getConsigneeById(model.getConsigneeId()));
+			if (model.getConsignorEmail() != null)
+				invoice.setConsignor(userService.getUserByEmailAndRole(model.getConsignorEmail(), Role.ROLE_CLIENT));
+			if (model.getProducts() != null) {
+
+				List<InvoiceItem> invItems = this.getProductItemByInvoice(invoice);
+				invItemRepo.deleteAll(invItems);
+
+				this.addProductItem(invoice, model.getProducts());
+			}
+
+			invoiceRepo.save(invoice);
+			return invoice;
+
+		} catch (Exception ex) {
+			return null;
+		}
+
+	}
+
+	public Invoice deactivateInvoice(Integer invoiceId) throws InvoiceNotFoundException {
+		Invoice invoice = this.getInvoiceById(invoiceId , true);
+		
+		if(invoice == null) {
+			throw new InvoiceNotFoundException();
+		}
+		
+		invoice.setIsActive(false);
+		
+		invoiceRepo.save(invoice);
+		return invoice;
 	}
 
 }

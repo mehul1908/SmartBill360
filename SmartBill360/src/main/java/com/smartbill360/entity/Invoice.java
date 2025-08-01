@@ -27,7 +27,6 @@ public class Invoice {
 	@ManyToOne
 	private Consignee consignee;
 	
-	
 	@ManyToOne
 	private User consignor;
 	
@@ -42,7 +41,9 @@ public class Invoice {
 	
 	@ManyToOne
 	private User accountant;
-
+	
+	private Boolean isActive;
+	
 	public Invoice(Consignee consignee, User consignor, User accountant) {
 		super();
 		this.consignee = consignee;
@@ -50,6 +51,7 @@ public class Invoice {
 		this.totalAmt = 0.0f;
 		this.taxAmt = 0.0f;
 		this.accountant = accountant;
+		this.isActive = true;
 	}
 	
 	

@@ -16,9 +16,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -175,7 +177,7 @@ public class CommonController {
 	@PreAuthorize("authenticated()")
 	@GetMapping("/send/invoice/{invoiceId}")
 	public ResponseEntity<ApiResponse> sendInvoice(@PathVariable Integer invoiceId) throws IOException {
-		Invoice invoice = invService.getInvoiceById(invoiceId);
+		Invoice invoice = invService.getInvoiceById(invoiceId , true);
 
 		if (invoice == null) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -234,7 +236,7 @@ public class CommonController {
 	}
 
 	@PreAuthorize("authenticated()")
-	@PostMapping("/update-password")
+	@PutMapping("/update/password")
 	public ResponseEntity<ApiResponse> updatePassword(@RequestBody @Valid ForgetPasswordModel model) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth != null && auth.getPrincipal() instanceof User user) {
@@ -252,7 +254,7 @@ public class CommonController {
 	}
 
 	@PreAuthorize("authenticated()")
-	@PostMapping("/forgetpassword")
+	@PutMapping("/forgetpassword")
 	public ResponseEntity<ApiResponse> forgetPassword() {
 		try {
 			userService.forgetPassword();
@@ -290,7 +292,7 @@ public class CommonController {
 	}
 
 	@PreAuthorize("authenticated()")
-	@PostMapping("/updateUser")
+	@PutMapping("/update")
 	public ResponseEntity<ApiResponse> updateUser(@RequestBody UpdateUserModel model) {
 		User user = userService.updateUser(model);
 		if (user != null) {
@@ -302,7 +304,7 @@ public class CommonController {
 	}
 
 	@PreAuthorize("authenticated()")
-	@GetMapping("/deactivate")
+	@DeleteMapping("/deactivate")
 	public ResponseEntity<ApiResponse> deactivateYourself() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth != null && auth.getPrincipal() instanceof User user) {

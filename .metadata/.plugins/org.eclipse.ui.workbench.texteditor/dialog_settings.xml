@@ -10,6 +10,14 @@
 			<item value="consignee"/>
 		</list>
 		<list key="findhistory">
+			<item value="isi"/>
+			<item value="isid"/>
+			<item value="getIn"/>
+			<item value="getI"/>
+			<item value="con"/>
+			<item value="getConsignee"/>
+			<item value="cons"/>
+			<item value="update"/>
 			<item value="UserAlready"/>
 			<item value="useral"/>
 			<item value="Client"/>

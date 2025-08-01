@@ -35,6 +35,7 @@ public class Product {
 	
 	private Float rate;
 
+	private Boolean isActive;
 
 	public Product(String name, String hsnCode, TaxSlab taxSlab, Float rate) {
 		super();
@@ -42,6 +43,7 @@ public class Product {
 		this.hsnCode = hsnCode;
 		this.taxSlab = taxSlab;
 		this.rate = rate;
+		this.isActive = true;
 	}
 	
 	

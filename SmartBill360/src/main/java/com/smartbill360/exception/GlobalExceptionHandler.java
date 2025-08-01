@@ -82,6 +82,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
     }
     
+    // Custom resource not found
+    @ExceptionHandler(ConsigneeNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleConsigneeNotFound(ConsigneeNotFoundException ex, HttpServletRequest request) {
+        ErrorResponse err = new ErrorResponse(LocalDateTime.now(), ex.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
+    }
+    
     @ExceptionHandler(GSTAlreadyExistedException.class)
     public ResponseEntity<ErrorResponse> handleGSTAlreadyExisted(GSTAlreadyExistedException ex, HttpServletRequest request) {
         ErrorResponse err = new ErrorResponse(LocalDateTime.now(), ex.getMessage(), request.getRequestURI());

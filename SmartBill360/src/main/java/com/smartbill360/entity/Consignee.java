@@ -17,7 +17,7 @@ public class Consignee {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Integer consignee_id;
+	private Integer consigneeId;
 	
 	@Column(name = "gstin" , unique = true , length = 15)
 	private String gstin;
@@ -36,6 +36,8 @@ public class Consignee {
 	
 	@Column(name="regular" , nullable = false)
 	private Boolean isRegular;
+	
+	private Boolean isActive;
 
 	public Consignee(String gstin, String name, Integer state_code, String email, String contact, String address,
 			Boolean isRegular) {
@@ -47,6 +49,7 @@ public class Consignee {
 		this.contact = contact;
 		this.address = address;
 		this.isRegular = isRegular;
+		this.isActive = true;
 	}
 	
 	

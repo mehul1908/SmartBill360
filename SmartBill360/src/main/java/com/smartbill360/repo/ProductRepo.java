@@ -15,4 +15,6 @@ public interface ProductRepo extends JpaRepository<Product, Integer>{
 
 	List<Product> findByNameContainingIgnoreCase(String name);
 
+	Optional<Product> findByIdAndIsActive(Integer id, Boolean isActive);
+
 }

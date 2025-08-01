@@ -1,23 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
-    <fullyQualifiedTypeName name="java.util.Locale"/>
-    <fullyQualifiedTypeName name="com.itextpdf.layout.element.Cell"/>
-    <fullyQualifiedTypeName name="com.itextpdf.layout.element.Table"/>
-    <fullyQualifiedTypeName name="com.itextpdf.layout.properties.UnitValue"/>
-    <fullyQualifiedTypeName name="com.smartbill360.entity.Consignee"/>
-    <fullyQualifiedTypeName name="com.smartbill360.entity.User"/>
-    <fullyQualifiedTypeName name="lombok.Getter"/>
-    <fullyQualifiedTypeName name="java.time.format.DateTimeFormatter"/>
-    <fullyQualifiedTypeName name="com.itextpdf.layout.element.Paragraph"/>
-    <fullyQualifiedTypeName name="com.itextpdf.layout.borders.Border"/>
     <fullyQualifiedTypeName name="com.itextpdf.kernel.pdf.canvas.PdfCanvas"/>
-    <fullyQualifiedTypeName name="com.smartbill360.entity.Invoice"/>
     <fullyQualifiedTypeName name="com.smartbill360.service.InvoiceService"/>
     <fullyQualifiedTypeName name="java.util.Optional"/>
     <fullyQualifiedTypeName name="java.util.Base64"/>
     <fullyQualifiedTypeName name="com.smartbill360.utilities.InvoicePDFGenerator"/>
     <fullyQualifiedTypeName name="org.springframework.http.HttpStatusCode"/>
-    <fullyQualifiedTypeName name="org.springframework.web.bind.annotation.PathVariable"/>
     <fullyQualifiedTypeName name="java.io.File"/>
     <fullyQualifiedTypeName name="java.io.FileOutputStream"/>
     <fullyQualifiedTypeName name="java.io.IOException"/>
@@ -31,17 +19,12 @@
     <fullyQualifiedTypeName name="jakarta.validation.constraints.NotBlank"/>
     <fullyQualifiedTypeName name="com.smartbill360.model.ForgetPasswordModel"/>
     <fullyQualifiedTypeName name="org.springframework.http.HttpStatus"/>
-    <fullyQualifiedTypeName name="org.springframework.http.ResponseEntity"/>
-    <fullyQualifiedTypeName name="com.smartbill360.model.ApiResponse"/>
     <fullyQualifiedTypeName name="jakarta.persistence.Entity"/>
     <fullyQualifiedTypeName name="jakarta.persistence.Id"/>
     <fullyQualifiedTypeName name="jakarta.persistence.GeneratedValue"/>
     <fullyQualifiedTypeName name="jakarta.persistence.GenerationType"/>
     <fullyQualifiedTypeName name="jakarta.persistence.OneToOne"/>
     <fullyQualifiedTypeName name="jakarta.persistence.JoinColumn"/>
-    <fullyQualifiedTypeName name="lombok.Data"/>
-    <fullyQualifiedTypeName name="lombok.NoArgsConstructor"/>
-    <fullyQualifiedTypeName name="lombok.AllArgsConstructor"/>
     <fullyQualifiedTypeName name="jakarta.validation.constraints.NotNull"/>
     <fullyQualifiedTypeName name="com.smartbill360.model.OtpModel"/>
     <fullyQualifiedTypeName name="jakarta.transaction.Transactional"/>
@@ -60,4 +43,21 @@
     <fullyQualifiedTypeName name="com.smartbill360.model.RegisterModel"/>
     <fullyQualifiedTypeName name="jakarta.mail.MessagingException"/>
     <fullyQualifiedTypeName name="lombok.extern.slf4j.Slf4j"/>
+    <fullyQualifiedTypeName name="lombok.Data"/>
+    <fullyQualifiedTypeName name="lombok.NoArgsConstructor"/>
+    <fullyQualifiedTypeName name="lombok.AllArgsConstructor"/>
+    <fullyQualifiedTypeName name="com.smartbill360.model.UpdateConsigneeModel"/>
+    <fullyQualifiedTypeName name="com.smartbill360.exception.ConsigneenotFoundException"/>
+    <fullyQualifiedTypeName name="com.smartbill360.exception.ConsigneeNotFoundException"/>
+    <fullyQualifiedTypeName name="org.springframework.http.ResponseEntity"/>
+    <fullyQualifiedTypeName name="com.smartbill360.model.ApiResponse"/>
+    <fullyQualifiedTypeName name="org.springframework.web.bind.annotation.PathVariable"/>
+    <fullyQualifiedTypeName name="org.springframework.web.bind.annotation.PutMapping"/>
+    <fullyQualifiedTypeName name="org.springframework.web.bind.annotation.DeleteMapping"/>
+    <fullyQualifiedTypeName name="com.smartbill360.model.UpdateInvoiceModel"/>
+    <fullyQualifiedTypeName name="com.smartbill360.entity.Invoice"/>
+    <fullyQualifiedTypeName name="com.smartbill360.exception.InvoiceNotFoundException"/>
+    <fullyQualifiedTypeName name="com.smartbill360.exception.UnauthorizedUserException"/>
+    <fullyQualifiedTypeName name="com.smartbill360.model.UpdateProductModel"/>
+    <fullyQualifiedTypeName name="com.smartbill360.entity.Product"/>
 </qualifiedTypeNameHistroy>

@@ -16,6 +16,7 @@ import com.smartbill360.entity.Consignee;
 import com.smartbill360.entity.OtpToken;
 import com.smartbill360.entity.Role;
 import com.smartbill360.entity.User;
+import com.smartbill360.exception.ConsigneeNotFoundException;
 import com.smartbill360.exception.GSTAlreadyExistedException;
 import com.smartbill360.exception.UnauthorizedUserException;
 import com.smartbill360.exception.UserAlreadyCreatedException;
@@ -23,6 +24,7 @@ import com.smartbill360.model.ConsigneeRegModel;
 import com.smartbill360.model.LoginModel;
 import com.smartbill360.model.OtpModel;
 import com.smartbill360.model.RegisterModel;
+import com.smartbill360.model.UpdateConsigneeModel;
 import com.smartbill360.model.UpdateUserModel;
 import com.smartbill360.repo.ConsigneeRepo;
 import com.smartbill360.repo.OtpTokenRepo;
@@ -232,6 +234,54 @@ public class UserService implements UserDetailsService {
 		user.setIsActive(false);
 		userRepo.save(user);
 		return user;
+	}
+
+	public Consignee updateConsignee(Integer consigneeId, @Valid UpdateConsigneeModel model) throws ConsigneeNotFoundException {
+		
+		Consignee consignee = this.getConsigneeById(consigneeId , true);
+		
+		if(consignee == null) {
+			throw new ConsigneeNotFoundException();
+		}
+		
+		if(model.getName()!=null)
+			consignee.setName(model.getName());
+		if(model.getIsRegular()!=null)
+			consignee.setIsRegular(model.getIsRegular());
+		if(model.getAddress()!=null)
+			consignee.setAddress(model.getAddress());
+		if(model.getContact()!=null)
+			consignee.setContact(model.getContact());
+		if(model.getEmail()!=null)
+			consignee.setEmail(model.getEmail());
+		if(model.getGstin()!=null)
+			consignee.setGstin(model.getGstin());
+		if(model.getStateCode()!=null)
+			consignee.setStateCode(model.getStateCode());
+		consigneeRepo.save(consignee);
+		return consignee;
+		
+	}
+
+	public Consignee getConsigneeById(Integer consigneeId, boolean b) {
+		Optional<Consignee> consigneeOp = consigneeRepo.findByConsigneeIdAndIsActive(consigneeId , true);
+		if (consigneeOp.isEmpty())
+			return null;
+
+		return consigneeOp.get();
+	}
+
+	public Consignee deactivateConsignee(Integer consigneeId) throws ConsigneeNotFoundException {
+		Consignee consignee = this.getConsigneeById(consigneeId , true);
+		
+		if(consignee == null) {
+			throw new ConsigneeNotFoundException();
+		}
+		
+		consignee.setIsActive(false);
+		
+		consigneeRepo.save(consignee);
+		return consignee;
 	}
 	
 	

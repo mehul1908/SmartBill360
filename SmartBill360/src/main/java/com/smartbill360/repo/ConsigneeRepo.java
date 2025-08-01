@@ -15,4 +15,6 @@ public interface ConsigneeRepo extends JpaRepository<Consignee, Integer>{
 	
 	List<Consignee> findByNameContainingIgnoreCase(String keyword);
 
+	Optional<Consignee> findByConsigneeIdAndIsActive(Integer consigneeId, boolean b);
+
 }
