@@ -19,7 +19,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -45,7 +44,6 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -235,7 +233,7 @@ public class CommonController {
 
 	@PreAuthorize("authenticated()")
 	@PostMapping("/update-password")
-	public ResponseEntity<ApiResponse> updatePassword(@RequestBody @Valid ForgetPasswordModel model) {
+	public ResponseEntity<ApiResponse> updatePassword(@RequestBody ForgetPasswordModel model) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth != null && auth.getPrincipal() instanceof User user) {
 			boolean flag = passEncoder.matches(model.getOldPassword(), user.getPassword());
