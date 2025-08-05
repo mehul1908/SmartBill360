@@ -1,0 +1,83 @@
+package com.smartbill360.modules.auth.service;
+
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import com.smartbill360.modules.auth.exception.UnauthorizedUserException;
+
+import com.smartbill360.modules.otp.entity.OtpToken;
+import com.smartbill360.modules.otp.service.OtpService;
+import com.smartbill360.modules.user.dto.LoginModel;
+import com.smartbill360.modules.user.entity.User;
+import com.smartbill360.modules.user.exception.UserNotFoundException;
+import com.smartbill360.modules.user.service.UserService;
+import com.smartbill360.utilities.EmailMessage;
+
+import jakarta.mail.MessagingException;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+
+@Service
+public class AuthServiceImpl implements AuthService{
+	
+	@Autowired
+	private UserService userService;
+	
+	@Autowired
+	private OtpService otpService;
+	
+	@Autowired
+	private EmailMessage emailMessage;
+	
+	@Transactional
+	public void updatePassword(String newPassword) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null && auth.getPrincipal() instanceof User user) {
+			user.setPassword(newPassword);
+			userService.save(user);
+		}else {
+			throw new UnauthorizedUserException("User is unauthentical or not valid");
+		}
+	}
+	
+	@Transactional
+	public void forgetPassword() throws MessagingException {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			if (auth != null && auth.getPrincipal() instanceof User user) {
+				
+				Optional<OtpToken> otpOpt = otpService.findByUser(user);
+				OtpToken otp = null;
+				if(otpOpt.isEmpty()) {
+					otp = new OtpToken(user);
+					otpService.save(otp);
+				}
+				else {
+					otp = otpOpt.get();
+					otp.generateOtp();
+					otpService.save(otp);
+				}
+				emailMessage.sendPasswordResetEmail(user.getEmail(), user.getName(), otp.getOtp());
+				
+				return;
+			}else {
+				throw new UnauthorizedUserException("User is unauthentical or not valid");
+			}
+	}
+	
+	public User loginUser(@Valid LoginModel model) throws UserNotFoundException {
+
+		Optional<User> userOp = userService.findByEmailAndIsActiveTrue(model.getEmail());
+
+		if (userOp.isEmpty())
+			throw new UsernameNotFoundException("Invalid Email Id");
+		else {
+			return userOp.get();
+		}
+	}
+
+}

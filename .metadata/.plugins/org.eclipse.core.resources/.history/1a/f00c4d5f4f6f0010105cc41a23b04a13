@@ -1,0 +1,102 @@
+package com.smartbill360.modules.consignee.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.smartbill360.modules.consignee.dto.ConsigneeRegModel;
+import com.smartbill360.modules.consignee.dto.UpdateConsigneeModel;
+import com.smartbill360.modules.consignee.entity.Consignee;
+import com.smartbill360.modules.consignee.exception.ConsigneeNotFoundException;
+import com.smartbill360.modules.consignee.exception.GSTAlreadyExistedException;
+import com.smartbill360.modules.consignee.repo.ConsigneeRepo;
+
+import jakarta.validation.Valid;
+
+public class ConsigneeServiceImpl implements ConsigneeService {
+
+	@Autowired
+	private ConsigneeRepo consigneeRepo;
+
+	public Consignee createConsignee(@Valid ConsigneeRegModel model) throws GSTAlreadyExistedException {
+
+		Optional<Consignee> consigneeOp = consigneeRepo.findByGstin(model.getGstin());
+		if (consigneeOp.isEmpty()) {
+			Consignee consignee = new Consignee(model.getGstin(), model.getName(), model.getStateCode(),
+					model.getEmail(), model.getContact(), model.getAddress(), model.getIsRegular());
+			consigneeRepo.save(consignee);
+			return consignee;
+		}
+		throw new GSTAlreadyExistedException(model.getGstin());
+
+	}
+
+	public Consignee deactivateConsignee(Integer consigneeId) throws ConsigneeNotFoundException {
+		Consignee consignee = this.getConsigneeById(consigneeId, true);
+
+		if (consignee == null) {
+			throw new ConsigneeNotFoundException();
+		}
+
+		consignee.setIsActive(false);
+
+		consigneeRepo.save(consignee);
+		return consignee;
+	}
+
+	public Consignee updateConsignee(Integer consigneeId, @Valid UpdateConsigneeModel model)
+			throws ConsigneeNotFoundException {
+
+		Consignee consignee = this.getConsigneeById(consigneeId, true);
+
+		if (consignee == null) {
+			throw new ConsigneeNotFoundException();
+		}
+
+		if (model.getName() != null)
+			consignee.setName(model.getName());
+		if (model.getIsRegular() != null)
+			consignee.setIsRegular(model.getIsRegular());
+		if (model.getAddress() != null)
+			consignee.setAddress(model.getAddress());
+		if (model.getContact() != null)
+			consignee.setContact(model.getContact());
+		if (model.getEmail() != null)
+			consignee.setEmail(model.getEmail());
+		if (model.getGstin() != null)
+			consignee.setGstin(model.getGstin());
+		if (model.getStateCode() != null)
+			consignee.setStateCode(model.getStateCode());
+		consigneeRepo.save(consignee);
+		return consignee;
+
+	}
+
+	public List<Consignee> getAllConsignee() {
+		List<Consignee> consignees = consigneeRepo.findAll();
+		return consignees;
+	}
+
+	public Consignee getConsigneeByGST(String gst) {
+		Optional<Consignee> consigneeOp = consigneeRepo.findByGstin(gst);
+		if (consigneeOp.isEmpty())
+			return null;
+
+		return consigneeOp.get();
+	}
+	
+	public Consignee getConsigneeById(Integer id) {
+		Optional<Consignee> consigneeOp = consigneeRepo.findById(id);
+		if (consigneeOp.isEmpty())
+			return null;
+
+		return consigneeOp.get();
+	}
+
+	public List<Consignee> searchConsigneeByNameSubstring(String keyword) {
+		List<Consignee> consignees = consigneeRepo.findByNameContainingIgnoreCase(keyword);
+		return consignees;
+	}
+
+}

@@ -1,0 +1,15 @@
+package com.smartbill360.modules.consignee.exception;
+
+public class ConsigneeNotFoundException extends Exception {
+
+	private static final long serialVersionUID = -6611044919122772259L;
+	
+	public ConsigneeNotFoundException() {
+		super("Consignee not found");
+	}
+
+	public ConsigneeNotFoundException(String string) {
+		super(string);
+}
+
+}

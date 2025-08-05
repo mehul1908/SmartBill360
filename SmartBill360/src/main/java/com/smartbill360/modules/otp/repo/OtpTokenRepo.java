@@ -1,0 +1,20 @@
+package com.smartbill360.modules.otp.repo;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.smartbill360.modules.otp.entity.OtpToken;
+import com.smartbill360.modules.user.entity.User;
+
+@Repository
+public interface OtpTokenRepo extends JpaRepository<OtpToken, String>{
+
+	Optional<OtpToken> findByUser(User user);
+
+	Optional<OtpToken> findByUserAndExpiryAfterAndIsUsedFalse(User user, LocalDateTime now);
+
+	
+}

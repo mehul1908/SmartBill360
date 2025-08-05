@@ -1,0 +1,31 @@
+package com.smartbill360.modules.product.service;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.smartbill360.modules.product.dto.ProductRegModel;
+import com.smartbill360.modules.product.dto.UpdateProductModel;
+import com.smartbill360.modules.product.entity.Product;
+import com.smartbill360.modules.product.exception.ProductAlreadyCreatedException;
+import com.smartbill360.modules.product.exception.ProductNotFoundException;
+
+import jakarta.validation.Valid;
+
+public interface ProductService {
+
+	Product createProduct(@Valid ProductRegModel model) throws ProductAlreadyCreatedException;
+
+	Product getProductById(Integer productId, boolean isActive);
+
+	Product updateProduct(Integer productId, @Valid UpdateProductModel model) throws ProductNotFoundException;
+
+	Product removeProduct(Integer productId) throws ProductNotFoundException;
+
+	List<Product> getAllProduct();
+
+	Product getProductById(Integer id);
+
+	List<Product> getProductByName(String name);
+
+}

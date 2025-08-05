@@ -1,0 +1,94 @@
+package com.smartbill360.modules.consignee.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.smartbill360.modules.consignee.dto.ConsigneeRegModel;
+import com.smartbill360.modules.consignee.dto.UpdateConsigneeModel;
+import com.smartbill360.modules.consignee.entity.Consignee;
+import com.smartbill360.modules.consignee.exception.ConsigneeNotFoundException;
+import com.smartbill360.modules.consignee.exception.GSTAlreadyExistedException;
+import com.smartbill360.modules.consignee.repo.ConsigneeRepo;
+
+import jakarta.validation.Valid;
+
+@Service
+public class ConsigneeServiceImpl implements ConsigneeService {
+
+    @Autowired
+    private ConsigneeRepo consigneeRepo;
+
+    @Override
+    public Consignee createConsignee(@Valid ConsigneeRegModel model) throws GSTAlreadyExistedException {
+        if (consigneeRepo.findByGstin(model.getGstin()).isPresent()) {
+            throw new GSTAlreadyExistedException(model.getGstin());
+        }
+
+        Consignee consignee = new Consignee(
+            model.getGstin(),
+            model.getName(),
+            model.getStateCode(),
+            model.getEmail(),
+            model.getContact(),
+            model.getAddress(),
+            model.getIsRegular()
+        );
+
+        return consigneeRepo.save(consignee);
+    }
+
+    @Override
+    public Consignee deactivateConsignee(Integer consigneeId) throws ConsigneeNotFoundException {
+        Consignee consignee = getConsigneeByIdAndStatus(consigneeId, true);
+
+        consignee.setIsActive(false);
+        return consigneeRepo.save(consignee);
+    }
+
+    @Override
+    public Consignee updateConsignee(Integer consigneeId, @Valid UpdateConsigneeModel model)
+            throws ConsigneeNotFoundException {
+
+        Consignee consignee = getConsigneeByIdAndStatus(consigneeId, true);
+
+        if (model.getName() != null) consignee.setName(model.getName());
+        if (model.getIsRegular() != null) consignee.setIsRegular(model.getIsRegular());
+        if (model.getAddress() != null) consignee.setAddress(model.getAddress());
+        if (model.getContact() != null) consignee.setContact(model.getContact());
+        if (model.getEmail() != null) consignee.setEmail(model.getEmail());
+        if (model.getGstin() != null) consignee.setGstin(model.getGstin());
+        if (model.getStateCode() != null) consignee.setStateCode(model.getStateCode());
+
+        return consigneeRepo.save(consignee);
+    }
+
+    @Override
+    public List<Consignee> getAllConsignee() {
+        return consigneeRepo.findAll();
+    }
+
+    @Override
+    public Consignee getConsigneeByGST(String gst) throws ConsigneeNotFoundException {
+        return consigneeRepo.findByGstin(gst)
+            .orElseThrow(() -> new ConsigneeNotFoundException("Consignee with GST " + gst + " not found"));
+    }
+
+    @Override
+    public Consignee getConsigneeById(Integer id) throws ConsigneeNotFoundException {
+        return consigneeRepo.findById(id)
+            .orElseThrow(() -> new ConsigneeNotFoundException("Consignee with ID " + id + " not found"));
+    }
+
+    @Override
+    public Consignee getConsigneeByIdAndStatus(Integer consigneeId, boolean isActive) throws ConsigneeNotFoundException {
+        return consigneeRepo.findByConsigneeIdAndIsActive(consigneeId, isActive)
+            .orElseThrow(() -> new ConsigneeNotFoundException("Active Consignee with ID " + consigneeId + " not found"));
+    }
+
+    @Override
+    public List<Consignee> searchConsigneeByNameSubstring(String keyword) {
+        return consigneeRepo.findByNameContainingIgnoreCase(keyword);
+    }
+}

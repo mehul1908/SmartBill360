@@ -1,0 +1,40 @@
+package com.smartbill360.modules.auth.controller;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.smartbill360.controller.UnauthorizedUserException;
+import com.smartbill360.dto.response.ApiResponse;
+import com.smartbill360.modules.user.dto.ForgetPasswordModel;
+import com.smartbill360.modules.user.entity.User;
+
+import jakarta.validation.Valid;
+
+@RestController
+public class AuthController {
+
+	@PreAuthorize("authenticated()")
+	@PutMapping("/update/password")
+	public ResponseEntity<ApiResponse> updatePassword(@RequestBody @Valid ForgetPasswordModel model) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null && auth.getPrincipal() instanceof User user) {
+			boolean flag = passEncoder.matches(model.getOldPassword(), user.getPassword());
+			if (flag) {
+				userService.updatePassword(passEncoder.encode(model.getNewPassword()));
+				return ResponseEntity.ok(new ApiResponse(true, null, "Password updated successfully"));
+			} else {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+						.body(new ApiResponse(false, null, "Old Password does not match"));
+			}
+		} else {
+			throw new UnauthorizedUserException("User is unauthentical or not valid");
+		}
+	}
+}

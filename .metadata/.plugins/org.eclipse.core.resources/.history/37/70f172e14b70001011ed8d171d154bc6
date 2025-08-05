@@ -1,0 +1,54 @@
+package com.smartbill360.modules.otp.service;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
+import com.smartbill360.modules.auth.exception.UnauthorizedUserException;
+import com.smartbill360.modules.otp.dto.OtpModel;
+import com.smartbill360.modules.otp.entity.OtpToken;
+import com.smartbill360.modules.user.entity.User;
+
+import jakarta.validation.Valid;
+
+@Service
+public class OtpServiceImpl implements OtpService{
+
+	public Boolean verifyOtp(@Valid OtpModel otp) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+	    if (auth != null && auth.getPrincipal() instanceof User user) {
+	        Optional<OtpToken> otpOp = otpRepo.findByUserAndExpiryAfterAndIsUsedFalse(user, LocalDateTime.now());
+
+	        if (otpOp.isEmpty()) {
+	            return false; // No active OTP
+	        }
+
+	        OtpToken otpToken = otpOp.get();
+
+	        // Check for maximum retry attempts
+	        if (otpToken.getAttempt() >= 3) {
+	            throw new RuntimeException("Too many incorrect attempts. OTP locked.");
+	        }
+
+	        // Check OTP match
+	        if (otpToken.getOtp().equals(otp.getOtp())) {
+	            otpToken.setIsUsed(true); // mark as used
+	            otpRepo.save(otpToken);
+	            return true;
+	        } else {
+	            // increment attempt and save
+	            otpToken.setAttempt(otpToken.getAttempt() + 1);
+	            otpRepo.save(otpToken);
+	            return false;
+	        }
+
+	    } else {
+	        throw new UnauthorizedUserException("User is unauthenticated or not valid.");
+	    }
+	}
+	
+}

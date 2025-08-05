@@ -1,0 +1,8 @@
+package com.smartbill360.modules.invoice.service;
+
+
+public class InvoiceServiceImpl implements InvoiceService {
+
+	
+
+}

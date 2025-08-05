@@ -1,0 +1,16 @@
+package com.smartbill360.modules.tax.repo;
+
+import java.math.BigDecimal;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.smartbill360.modules.tax.entity.TaxSlab;
+
+@Repository
+public interface TaxSlabRepo extends JpaRepository<TaxSlab, BigDecimal>{
+
+	Optional<TaxSlab> findByIdAndIsActive(BigDecimal id, boolean b);
+
+}

@@ -1,0 +1,52 @@
+package com.smartbill360.modules.user.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.smartbill360.common.enums.Role;
+import com.smartbill360.modules.user.dto.RegisterModel;
+import com.smartbill360.modules.user.entity.User;
+import com.smartbill360.modules.user.exception.UserAlreadyCreatedException;
+import com.smartbill360.modules.user.repo.UserRepo;
+
+import jakarta.validation.Valid;
+
+@Service
+public class UserServiceImpl implements UserService{
+	
+	@Autowired
+	private UserRepo userRepo;
+
+	public User getUserByEmail(String username) {
+		Optional<User> userOp = userRepo.findById(username);
+		if (userOp.isEmpty())
+			return null;
+
+		return userOp.get();
+	}
+	
+	public List<User> getUserByRole(Role role) {
+		List<User> users = userRepo.findByRole(role);
+		return users;
+		
+	}
+	
+	public User saveUser(@Valid RegisterModel model) throws UserAlreadyCreatedException {
+		User user = this.getUserByEmail(model.getEmail());
+		if (user == null) {
+			String message = "User with email id " + model.getEmail() + " is already created";
+			throw new UserAlreadyCreatedException(message);
+		}
+		try {
+			user = new User(model.getEmail(), model.getPassword(), model.getRole(), model.getName());
+			userRepo.save(user);
+			return user;
+		} catch (Exception ex) {
+			throw ex;
+		}
+
+	}
+}

@@ -1,0 +1,8 @@
+package com.smartbill360.modules.product.service;
+
+import org.springframework.stereotype.Component;
+
+@Component
+public interface ProductService {
+
+}

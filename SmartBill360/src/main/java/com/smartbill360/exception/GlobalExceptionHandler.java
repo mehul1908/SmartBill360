@@ -1,6 +1,5 @@
 package com.smartbill360.exception;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,134 +7,75 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 
-import com.smartbill360.model.ErrorResponse;
+import com.smartbill360.dto.response.ErrorResponse;
+import com.smartbill360.modules.auth.exception.UnauthorizedUserException;
+import com.smartbill360.modules.user.exception.EmailAndPasswordNotMatchException;
+import com.smartbill360.modules.user.exception.UserAlreadyCreatedException;
+import com.smartbill360.modules.user.exception.UserNotFoundException;
+import com.smartbill360.modules.consignee.exception.ConsigneeNotFoundException;
+import com.smartbill360.modules.consignee.exception.GSTAlreadyExistedException;
+import com.smartbill360.modules.invoice.exception.InvoiceNotFoundException;
+import com.smartbill360.modules.product.exception.ProductAlreadyCreatedException;
+import com.smartbill360.modules.product.exception.ProductNotFoundException;
+import com.smartbill360.modules.tax.exception.TaxSlabAlreadyCreatedException;
+import com.smartbill360.modules.tax.exception.TaxSlabNotFoundException;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolationException;
+import jakarta.mail.MessagingException;
+
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
-
-
+@ControllerAdvice
 @Slf4j
-@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Validation errors (e.g., @Valid DTO)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach((FieldError error) ->
-                errors.put(error.getField(), error.getDefaultMessage()));
+	@ExceptionHandler({ ResourceNotFoundException.class, UserNotFoundException.class, ConsigneeNotFoundException.class,
+			InvoiceNotFoundException.class, ProductNotFoundException.class, TaxSlabNotFoundException.class })
+	public ResponseEntity<ErrorResponse> handleNotFound(RuntimeException ex, HttpServletRequest request) {
+		return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND, request.getRequestURI());
+	}
 
-        ErrorResponse err = new ErrorResponse(LocalDateTime.now(), "Validation failed", request.getRequestURI(), errors);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
-    }
+	@ExceptionHandler({ UserAlreadyCreatedException.class, GSTAlreadyExistedException.class,
+			ProductAlreadyCreatedException.class, TaxSlabAlreadyCreatedException.class })
+	public ResponseEntity<ErrorResponse> handleConflict(RuntimeException ex, HttpServletRequest request) {
+		return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT, request.getRequestURI());
+	}
 
-    // Validation for @RequestParam, @PathVariable, etc.
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex, HttpServletRequest request) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getConstraintViolations().forEach(cv -> {
-            String field = cv.getPropertyPath().toString();
-            errors.put(field, cv.getMessage());
-        });
+	@ExceptionHandler({ UnauthorizedUserException.class, EmailAndPasswordNotMatchException.class })
+	public ResponseEntity<ErrorResponse> handleUnauthorized(RuntimeException ex, HttpServletRequest request) {
+		return buildErrorResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED, request.getRequestURI());
+	}
 
-        ErrorResponse err = new ErrorResponse(LocalDateTime.now(), "Constraint violation", request.getRequestURI(), errors);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
-    }
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex,
+			HttpServletRequest request) {
+		Map<String, String> errors = new HashMap<>();
+		for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+			errors.put(error.getField(), error.getDefaultMessage());
+		}
+		ErrorResponse err = new ErrorResponse(LocalDateTime.now(), "Validation failed", request.getRequestURI());
+		err.setValidationErrors(errors);
+		return new ResponseEntity<>(err, HttpStatus.BAD_REQUEST);
+	}
 
-    // Malformed JSON
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleMalformedJson(HttpMessageNotReadableException ex, HttpServletRequest request) {
-        ErrorResponse err = new ErrorResponse(LocalDateTime.now(), "Malformed JSON request" + ex.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
-    }
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, HttpServletRequest request) {
+		log.error("Unhandled exception", ex);
+		return buildErrorResponse("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR, request.getRequestURI());
+	}
 
-    // Missing required request parameters
-    @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<ErrorResponse> handleMissingParams(MissingServletRequestParameterException ex, HttpServletRequest request) {
-        ErrorResponse err = new ErrorResponse(LocalDateTime.now(), "Missing parameter: " + ex.getParameterName(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
-    }
+	@ExceptionHandler(MessagingException.class)
+	public ResponseEntity<ErrorResponse> handleMessagingException(MessagingException ex, HttpServletRequest request) {
+		log.error("Failed to send email: {}", ex.getMessage(), ex);
+		return buildErrorResponse("Failed to send email. Please try again later.", HttpStatus.SERVICE_UNAVAILABLE,request.getRequestURI());
+	}
 
-    // JPA entity not found
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleEntityNotFound(EntityNotFoundException ex, HttpServletRequest request) {
-        ErrorResponse err = new ErrorResponse(LocalDateTime.now(), ex.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
-    }
-
-    // Custom resource not found
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleCustomNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
-        ErrorResponse err = new ErrorResponse(LocalDateTime.now(), ex.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
-    }
-    
-    // Custom resource not found
-    @ExceptionHandler(ConsigneeNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleConsigneeNotFound(ConsigneeNotFoundException ex, HttpServletRequest request) {
-        ErrorResponse err = new ErrorResponse(LocalDateTime.now(), ex.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
-    }
-    
-    @ExceptionHandler(GSTAlreadyExistedException.class)
-    public ResponseEntity<ErrorResponse> handleGSTAlreadyExisted(GSTAlreadyExistedException ex, HttpServletRequest request) {
-        ErrorResponse err = new ErrorResponse(LocalDateTime.now(), ex.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(err);
-    }
- 
-    @ExceptionHandler(EmailAndPasswordNotMatchException.class)
-    public ResponseEntity<ErrorResponse> handleEmailAndPasswordNotMatch(ResourceNotFoundException ex, HttpServletRequest request) {
-        ErrorResponse err = new ErrorResponse(LocalDateTime.now(), ex.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
-    }
-    
-
-    // Database constraint violation (e.g., duplicate key)
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex, HttpServletRequest request) {
-        ErrorResponse err = new ErrorResponse(LocalDateTime.now(), "Database error: " + ex.getRootCause().getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(err);
-    }
-
-    @ExceptionHandler(IOException.class)
-    public ResponseEntity<ErrorResponse> handleIOException(IOException ex, HttpServletRequest request) {
-        ErrorResponse err = new ErrorResponse(
-                LocalDateTime.now(),
-                "I/O error occurred: " + ex.getMessage(),
-                request.getRequestURI()
-        );
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(err);
-    }
-    
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
-        ErrorResponse err = new ErrorResponse(LocalDateTime.now(), "Access Denied", request.getRequestURI());
-        log.warn("Access denied: {}", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(err);
-    }
-    
-    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<ErrorResponse> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
-        ErrorResponse err = new ErrorResponse(LocalDateTime.now(), "HTTP method not supported: " + ex.getMethod(), request.getRequestURI());
-        log.warn("Method not supported: {}", ex.getMethod());
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(err);
-    }
-    
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex, HttpServletRequest request) {
-//        ErrorResponse err = new ErrorResponse(LocalDateTime.now(), "Internal Server Error: " + ex.getMessage() + ":", request.getRequestURI());
-//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(err);
-//    }
+	private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status, String path) {
+		ErrorResponse err = new ErrorResponse(LocalDateTime.now(), message, path);
+		return new ResponseEntity<>(err, status);
+	}
 }

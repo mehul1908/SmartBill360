@@ -1,0 +1,31 @@
+package com.smartbill360.modules.invoice.service;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.smartbill360.modules.invoice.dto.InvoiceRegModel;
+import com.smartbill360.modules.invoice.entity.Invoice;
+import com.smartbill360.modules.invoice.entity.InvoiceItem;
+import com.smartbill360.modules.invoice.exception.InvoiceNotFoundException;
+
+import jakarta.validation.Valid;
+
+@Service
+public interface InvoiceService {
+
+	byte[] createInvoice(@Valid InvoiceRegModel model);
+
+	Invoice updateInvoice(Integer invoiceId, @Valid InvoiceRegModel model) throws InvoiceNotFoundException;
+
+	Invoice deactivateInvoice(Integer invoiceId) throws InvoiceNotFoundException;
+
+	Invoice getInvoiceById(Integer invoiceId);
+
+	boolean isUserRelatedToInvoice(Invoice invoice);
+
+	List<InvoiceItem> getProductItemByInvoice(Invoice invoice);
+
+	Invoice getInvoiceById(Integer invoiceId, boolean b);
+
+}

@@ -1,0 +1,13 @@
+package com.smartbill360.modules.tax.repo;
+
+import java.math.BigDecimal;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.smartbill360.modules.tax.entity.TaxSlab;
+
+@Repository
+public interface TaxSlabRepo extends JpaRepository<TaxSlab, BigDecimal>{
+
+}

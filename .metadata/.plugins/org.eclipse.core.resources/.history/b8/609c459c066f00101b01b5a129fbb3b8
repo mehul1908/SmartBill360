@@ -1,0 +1,14 @@
+package com.smartbill360.modules.invoice.service;
+
+import org.springframework.stereotype.Service;
+
+import com.smartbill360.modules.invoice.dto.InvoiceRegModel;
+
+import jakarta.validation.Valid;
+
+@Service
+public interface InvoiceService {
+
+	byte[] createInvoice(@Valid InvoiceRegModel model);
+
+}

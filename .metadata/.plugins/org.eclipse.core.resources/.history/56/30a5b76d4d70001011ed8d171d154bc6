@@ -1,0 +1,11 @@
+package com.smartbill360.modules.otp.service;
+
+import com.smartbill360.modules.otp.dto.OtpModel;
+
+import jakarta.validation.Valid;
+
+public interface OtpService {
+
+	Boolean verifyOtp(@Valid OtpModel otp);
+
+}

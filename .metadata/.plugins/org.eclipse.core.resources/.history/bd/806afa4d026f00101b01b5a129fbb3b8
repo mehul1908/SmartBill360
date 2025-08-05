@@ -1,0 +1,26 @@
+package com.smartbill360.modules.consignee.service;
+
+import java.util.Optional;
+
+import com.smartbill360.modules.consignee.dto.ConsigneeRegModel;
+import com.smartbill360.modules.consignee.entity.Consignee;
+import com.smartbill360.modules.consignee.exception.GSTAlreadyExistedException;
+
+import jakarta.validation.Valid;
+
+public class ConsigneeServiceImpl implements ConsigneeService {
+
+	public Consignee createConsignee(@Valid ConsigneeRegModel model) throws GSTAlreadyExistedException {
+
+		Optional<Consignee> consigneeOp = consigneeRepo.findByGstin(model.getGstin());
+		if (consigneeOp.isEmpty()) {
+			Consignee consignee = new Consignee(model.getGstin(), model.getName(), model.getStateCode(),
+					model.getEmail(), model.getContact(), model.getAddress(), model.getIsRegular());
+			consigneeRepo.save(consignee);
+			return consignee;
+		}
+		throw new GSTAlreadyExistedException(model.getGstin());
+
+	}
+	
+}

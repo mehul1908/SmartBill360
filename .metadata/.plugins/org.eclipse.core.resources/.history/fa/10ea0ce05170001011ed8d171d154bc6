@@ -1,0 +1,110 @@
+package com.smartbill360.modules.user.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.smartbill360.common.enums.Role;
+import com.smartbill360.dto.response.ApiResponse;
+import com.smartbill360.modules.user.dto.RegisterModel;
+import com.smartbill360.modules.user.dto.UpdateUserModel;
+import com.smartbill360.modules.user.entity.User;
+import com.smartbill360.modules.user.exception.UserAlreadyCreatedException;
+import com.smartbill360.modules.user.service.UserService;
+
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+
+@RestController
+@Slf4j
+public class UserController {
+
+	@Autowired
+	private UserService userService;
+	
+	@Autowired 
+	private PasswordEncoder passEncoder;
+	
+	@PreAuthorize("hasRole('ADMIN')")
+	@GetMapping("/get/user/email/{email}")
+	public ResponseEntity<ApiResponse> getUserByEmail(@PathVariable String email){
+		User user = userService.getUserByEmail(email);
+		if(user==null)
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, null, "Client with given email id not found"));
+		return ResponseEntity.ok(new ApiResponse(true, user, "User Found"));
+	}
+	
+	@PreAuthorize("hasRole('ADMIN')")
+	@GetMapping("/get/user/role/{role}")
+	public ResponseEntity<ApiResponse> getUsersByRole(@PathVariable Role role){
+		List<User> users = userService.getUserByRole(role);
+		
+		return ResponseEntity.ok(new ApiResponse(true, users, "Users Found"));
+	}
+	
+	@PreAuthorize("hasRole('ADMIN')")
+	@PostMapping("/add/admin")
+	public ResponseEntity<ApiResponse> addAdmin(@Valid @RequestBody RegisterModel model) throws MessagingException, UserAlreadyCreatedException{
+		model.setPassword(passEncoder.encode(model.getPassword()));
+		User user = userService.saveUser(model);
+		if(user!=null) {
+			log.info("New admin is created");
+			return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(true, user, "User Added Successfully"));
+		}
+		else {
+			log.warn("There is error is creating the new admin");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse(false , null , "User is not able to add"));
+		}
+	}
+	
+	@PreAuthorize("hasAnyRole('ADMIN' , 'ACCOUNTANT')")
+	@GetMapping("/get/client/email/{email}")
+	public ResponseEntity<ApiResponse> getClientByEmail(@PathVariable String email) {
+		User user = userService.getUserByEmailAndRole(email, Role.ROLE_CLIENT);
+		if (user == null)
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body(new ApiResponse(false, null, "Client with given email id not found"));
+		return ResponseEntity.ok(new ApiResponse(true, user, "User Found"));
+	}
+	
+	@PreAuthorize("authenticated()")
+	@PutMapping("/update")
+	public ResponseEntity<ApiResponse> updateUser(@RequestBody UpdateUserModel model) {
+		User user = userService.updateUser(model);
+		if (user != null) {
+			log.info("User is updated successfully");
+			return ResponseEntity.ok(new ApiResponse(true, user, "User is updated successfully!!"));
+		}
+		log.warn("User is not updated");
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse(false, null, "User is updated!!"));
+	}
+
+	@PreAuthorize("authenticated()")
+	@DeleteMapping("/deactivate")
+	public ResponseEntity<ApiResponse> deactivateYourself() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null && auth.getPrincipal() instanceof User user) {
+			User updatedUser = userService.deactivate(user);
+			log.info("User is deactivated");
+			return ResponseEntity.ok(new ApiResponse(true, updatedUser, "User deactivated"));
+		} else {
+			log.warn("User is not able to deactivate");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse(false, null, "Login Again"));
+		}
+	}
+	
+}

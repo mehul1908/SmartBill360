@@ -1,0 +1,23 @@
+package com.smartbill360.modules.user.service;
+
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.smartbill360.modules.user.entity.User;
+import com.smartbill360.modules.user.repo.UserRepo;
+
+public class UserServiceImpl implements UserService{
+	
+	@Autowired
+	private UserRepo userRepo;
+
+	public User getUserByEmail(String username) {
+		Optional<User> userOp = userRepo.findById(username);
+		if (userOp.isEmpty())
+			return null;
+
+		return userOp.get();
+	}
+	
+}

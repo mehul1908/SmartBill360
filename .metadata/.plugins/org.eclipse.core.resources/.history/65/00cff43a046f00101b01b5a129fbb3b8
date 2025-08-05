@@ -1,0 +1,8 @@
+package com.smartbill360.modules.tax.controller;
+
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class TaxController {
+
+}

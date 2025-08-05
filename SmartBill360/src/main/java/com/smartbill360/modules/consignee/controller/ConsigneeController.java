@@ -1,0 +1,96 @@
+package com.smartbill360.modules.consignee.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.smartbill360.dto.response.ApiResponse;
+
+import com.smartbill360.modules.consignee.dto.ConsigneeRegModel;
+import com.smartbill360.modules.consignee.dto.UpdateConsigneeModel;
+import com.smartbill360.modules.consignee.entity.Consignee;
+import com.smartbill360.modules.consignee.exception.ConsigneeNotFoundException;
+import com.smartbill360.modules.consignee.exception.GSTAlreadyExistedException;
+import com.smartbill360.modules.consignee.service.ConsigneeService;
+
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+
+@RestController
+@Slf4j
+@RequestMapping("/consignee")
+public class ConsigneeController {
+
+    @Autowired
+    private ConsigneeService consigneeService;
+
+    // Create a new Consignee
+    @PreAuthorize("hasRole('ACCOUNTANT')")
+    @PostMapping("/create")
+    public ResponseEntity<ApiResponse> createConsignee(@RequestBody @Valid ConsigneeRegModel model) throws GSTAlreadyExistedException {
+        Consignee consignee = consigneeService.createConsignee(model);
+        log.info("Consignee created successfully: {}", consignee.getConsigneeId());
+        return ResponseEntity.ok(new ApiResponse(true, null, "Client is created successfully"));
+    }
+
+    // Update Consignee
+    @PreAuthorize("hasRole('ACCOUNTANT')")
+    @PutMapping("/update/{consigneeId}")
+    public ResponseEntity<ApiResponse> updateConsignee(@RequestBody @Valid UpdateConsigneeModel model,
+                                                       @PathVariable Integer consigneeId) throws ConsigneeNotFoundException {
+        Consignee updated = consigneeService.updateConsignee(consigneeId, model);
+        log.info("Consignee updated: {}", updated.getConsigneeId());
+        return ResponseEntity.ok(new ApiResponse(true, null, "Updation completed"));
+    }
+
+    // Remove (Deactivate) Consignee
+    @PreAuthorize("hasRole('ACCOUNTANT')")
+    @DeleteMapping("/remove/{consigneeId}")
+    public ResponseEntity<ApiResponse> removeConsignee(@PathVariable Integer consigneeId) throws ConsigneeNotFoundException {
+        Consignee removed = consigneeService.deactivateConsignee(consigneeId);
+        log.info("Consignee deactivated: {}", removed.getConsigneeId());
+        return ResponseEntity.ok(new ApiResponse(true, null, "Consignee deactivated successfully"));
+    }
+
+    // Get all Consignees
+    @PreAuthorize("authenticated()")
+    @GetMapping("/get/all")
+    public ResponseEntity<ApiResponse> getAllConsignee() {
+        List<Consignee> consignees = consigneeService.getAllConsignee();
+        return ResponseEntity.ok(new ApiResponse(true, consignees, "Retrieved Consignees"));
+    }
+
+    // Get Consignee by GST
+    @PreAuthorize("authenticated()")
+    @GetMapping("/get/gst/{gst}")
+    public ResponseEntity<ApiResponse> getConsigneeByGST(@PathVariable String gst) throws ConsigneeNotFoundException {
+        Consignee consignee = consigneeService.getConsigneeByGST(gst.toUpperCase());
+        return ResponseEntity.ok(new ApiResponse(true, consignee, "Consignee Found"));
+    }
+
+    // Get Consignee by ID
+    @PreAuthorize("authenticated()")
+    @GetMapping("/get/id/{id}")
+    public ResponseEntity<ApiResponse> getConsigneeById(@PathVariable Integer id) throws ConsigneeNotFoundException {
+        Consignee consignee = consigneeService.getConsigneeById(id);
+        return ResponseEntity.ok(new ApiResponse(true, consignee, "Consignee Found"));
+    }
+
+    // Search Consignee by keywords
+    @PreAuthorize("authenticated()")
+    @GetMapping("/get/keyword/{keyword}")
+    public ResponseEntity<ApiResponse> searchConsigneeByNameSubstring(@PathVariable String keyword) {
+        List<Consignee> consignees = consigneeService.searchConsigneeByNameSubstring(keyword);
+        return ResponseEntity.ok(new ApiResponse(true, consignees, "Retrieved Consignees"));
+    }
+}

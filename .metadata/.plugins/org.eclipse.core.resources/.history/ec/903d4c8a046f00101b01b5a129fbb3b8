@@ -1,0 +1,18 @@
+package com.smartbill360.modules.invoice.service;
+
+import com.smartbill360.modules.tax.dto.TaxSlabRegModel;
+import com.smartbill360.modules.tax.entity.TaxSlab;
+import com.smartbill360.modules.tax.exception.TaxSlabAlreadyCreatedException;
+import com.smartbill360.modules.tax.service.TaxService;
+
+import jakarta.validation.Valid;
+
+public class InvoiceServiceImpl implements TaxService {
+
+	@Override
+	public TaxSlab createTaxSlab(@Valid TaxSlabRegModel model) throws TaxSlabAlreadyCreatedException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

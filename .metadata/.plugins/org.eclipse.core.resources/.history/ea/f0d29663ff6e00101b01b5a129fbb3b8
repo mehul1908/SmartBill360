@@ -1,0 +1,85 @@
+package com.smartbill360.entity;
+
+import java.math.BigDecimal;
+
+import com.smartbill360.entity.Product;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+public class InvoiceItem {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String invoiceItemId;
+
+    @ManyToOne
+    @JoinColumn(name = "invoice_id")
+    private Invoice invoice;
+
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
+
+    private Integer quantity;
+
+    private BigDecimal rate;
+
+    private BigDecimal amt;
+
+    private BigDecimal cgst;
+
+    private BigDecimal sgst;
+
+    private BigDecimal cess;
+
+    private BigDecimal discInPer;
+
+    private BigDecimal tax;
+
+    public InvoiceItem(Invoice invoice, Product product, Integer quantity, BigDecimal rate, BigDecimal discInPer) {
+        this.invoice = invoice;
+        this.product = product;
+        this.quantity = quantity;
+        this.rate = (rate != null) ? rate : product.getRate();
+        this.discInPer = (discInPer != null) ? discInPer : BigDecimal.ZERO;
+
+        calculateAmounts();
+    }
+
+    public void setRate(BigDecimal rate) {
+        this.rate = rate;
+        calculateAmounts();
+    }
+
+    private void calculateAmounts() {
+        BigDecimal qtyBD = BigDecimal.valueOf(this.quantity);
+        BigDecimal grossAmount = this.rate.multiply(qtyBD);
+
+        BigDecimal discount = grossAmount.multiply(this.discInPer).divide(BigDecimal.valueOf(100));
+        BigDecimal discountedAmount = grossAmount.subtract(discount);
+
+        BigDecimal cgstRate = product.getTaxSlab().getCgst();
+        BigDecimal sgstRate = product.getTaxSlab().getSgst();
+        BigDecimal cessRate = product.getTaxSlab().getCess();
+
+        this.cgst = discountedAmount.multiply(cgstRate).divide(BigDecimal.valueOf(100));
+        this.sgst = discountedAmount.multiply(sgstRate).divide(BigDecimal.valueOf(100));
+        this.cess = discountedAmount.multiply(cessRate).divide(BigDecimal.valueOf(100));
+
+        this.tax = cgst.add(sgst).add(cess);
+        this.amt = discountedAmount.add(this.tax);
+    }
+}

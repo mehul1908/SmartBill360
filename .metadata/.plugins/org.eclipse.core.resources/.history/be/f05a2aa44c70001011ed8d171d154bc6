@@ -1,0 +1,11 @@
+package com.smartbill360.modules.auth.service;
+
+import jakarta.mail.MessagingException;
+
+public interface AuthService {
+
+	void updatePassword(String encode);
+
+	void forgetPassword() throws MessagingException;
+
+}

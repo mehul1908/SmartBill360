@@ -1,0 +1,81 @@
+package com.smartbill360.modules.consignee.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.smartbill360.dto.response.ApiResponse;
+import com.smartbill360.modules.consignee.dto.ConsigneeRegModel;
+import com.smartbill360.modules.consignee.dto.UpdateConsigneeModel;
+import com.smartbill360.modules.consignee.entity.Consignee;
+import com.smartbill360.modules.consignee.exception.ConsigneeNotFoundException;
+import com.smartbill360.modules.consignee.exception.GSTAlreadyExistedException;
+import com.smartbill360.modules.consignee.service.ConsigneeService;
+
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+
+@RestController
+@Slf4j
+public class ConsigneeController {
+
+	@Autowired
+	private ConsigneeService consigneeService;
+	
+	//Create a new Consignee
+		@PreAuthorize("hasRole('ACCOUNTANT')")
+		@PostMapping("/create/consignee")
+		public ResponseEntity<ApiResponse> createConsignee(@RequestBody @Valid ConsigneeRegModel model) throws GSTAlreadyExistedException{
+			
+			Consignee consignee = consigneeService.createConsignee(model);
+			
+			if(consignee!=null) {
+				log.info("Consignee created successfully");
+				return ResponseEntity.ok(new ApiResponse(true, null, "Client is created successfully"));
+			}else {
+				log.warn("Consignee is not created");
+				return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Client can not be created"));
+			}
+		}
+		
+		//update consignee
+		@PreAuthorize("hasRole('ACCOUNTANT')")
+		@PutMapping("/update/consignee/{consigneeId}")
+		public ResponseEntity<ApiResponse> updateConsignee(@RequestBody @Valid UpdateConsigneeModel model , @PathVariable Integer consigneeId) throws ConsigneeNotFoundException{
+			
+			Consignee consignee = consigneeService.updateConsignee(consigneeId , model);
+			
+			if(consignee == null) {
+				log.info("Consignee is updated");
+				return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Updation of Consignee is not carried out"));
+			}
+			else {
+				log.warn("Consignee is not updated");
+				return ResponseEntity.ok(new ApiResponse(true , null , "Updation completed"));
+			}
+		}
+		
+		//remove the consignee
+		@PreAuthorize("hasRole('ACCOUNTANT')")
+		@DeleteMapping("/remove/consignee/{consigneeId}")
+		public ResponseEntity<ApiResponse> removeConsignee(@PathVariable Integer consigneeId) throws ConsigneeNotFoundException{
+			Consignee consignee = consigneeService.deactivateConsignee(consigneeId);
+			if(consignee == null) {
+				log.warn("Consignee is not deactivated");
+				return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Updation of Consignee is not carried out"));
+			}
+			else {
+				log.info("Consignee is deactivated");
+				return ResponseEntity.ok(new ApiResponse(true , null , "Updation completed"));
+			}
+		}
+		
+		
+	
+}

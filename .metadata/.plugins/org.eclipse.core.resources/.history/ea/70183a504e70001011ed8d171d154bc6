@@ -1,0 +1,102 @@
+package com.smartbill360.modules.product.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.smartbill360.dto.response.ApiResponse;
+import com.smartbill360.modules.product.dto.ProductRegModel;
+import com.smartbill360.modules.product.dto.UpdateProductModel;
+import com.smartbill360.modules.product.entity.Product;
+import com.smartbill360.modules.product.exception.ProductAlreadyCreatedException;
+import com.smartbill360.modules.product.exception.ProductNotFoundException;
+import com.smartbill360.modules.product.service.ProductService;
+
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+
+@RestController
+@Slf4j
+public class ProductController {
+
+	@Autowired
+	private ProductService prodService;
+	
+	//create a product
+		@PreAuthorize("hasRole('ACCOUNTANT')")
+		@PostMapping("/create/product")
+		public ResponseEntity<ApiResponse> createProduct(@RequestBody @Valid ProductRegModel model) throws ProductAlreadyCreatedException{
+			Product prod = prodService.createProduct(model);
+			if(prod != null) {
+				log.info("Product created successfully");
+				return ResponseEntity.ok(new ApiResponse(true, null, "Product is created successfully"));
+			}else {
+				log.warn("Product is not created");
+				return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Product can not be created"));
+			}
+			
+		}
+		
+		@PreAuthorize("hasRole('ACCOUNTANT')")
+		@PutMapping("/update/product/{productId}")
+		public ResponseEntity<ApiResponse> updateProduct(@RequestBody @Valid UpdateProductModel model , @PathVariable Integer productId) throws ProductNotFoundException{
+			
+			Product prod = prodService.updateProduct(productId , model);
+			if(prod == null)
+				return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Updation of Product is not carried out"));
+			else
+				return ResponseEntity.ok(new ApiResponse(true , null , "Updation completed"));
+			
+		}
+		
+		@PreAuthorize("hasRole('ACCOUNTANT')")
+		@DeleteMapping("/remove/product/{productId}")
+		public ResponseEntity<ApiResponse> removeProduct(@PathVariable Integer productId) throws ProductNotFoundException {
+			Product prod = prodService.removeProduct(productId);
+			if(prod == null)
+				return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Updation of Product is not carried out"));
+			else
+				return ResponseEntity.ok(new ApiResponse(true , null , "Updation completed"));
+		}
+		
+		@PreAuthorize("authenticated()")
+		@GetMapping("/get/product/all")
+		public ResponseEntity<ApiResponse> getAllProduct() {
+
+			List<Product> prods = prodService.getAllProduct();
+			return ResponseEntity.ok(new ApiResponse(true, prods, "Retrieved Products"));
+
+		}
+
+		@PreAuthorize("authenticated()")
+		@GetMapping("/get/product/id/{id}")
+		public ResponseEntity<ApiResponse> getProductById(@PathVariable Integer id) {
+
+			Product prod = prodService.getProductById(id);
+			if (prod == null)
+				return ResponseEntity.status(HttpStatus.NOT_FOUND)
+						.body(new ApiResponse(false, null, "Product with given id not found"));
+			return ResponseEntity.ok(new ApiResponse(true, prod, "User Found"));
+
+		}
+
+		@PreAuthorize("authenticated()")
+		@GetMapping("/get/product/name/{name}")
+		public ResponseEntity<ApiResponse> getProductByName(@PathVariable String name) {
+
+			List<Product> prods = prodService.getProductByName(name);
+			return ResponseEntity.ok(new ApiResponse(true, prods, "Retrieved Products"));
+
+		}
+	
+}

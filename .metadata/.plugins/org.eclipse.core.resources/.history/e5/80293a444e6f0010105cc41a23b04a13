@@ -1,0 +1,21 @@
+package com.smartbill360.modules.user.service;
+
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
+import com.smartbill360.common.enums.Role;
+import com.smartbill360.modules.user.entity.User;
+
+
+@Component
+public interface UserService {
+
+	User getUserByEmailAndRole(String consignorEmail, Role roleClient);
+
+	User getUserByEmail(String email);
+
+	List<User> getUserByRole(Role role);
+
+
+}

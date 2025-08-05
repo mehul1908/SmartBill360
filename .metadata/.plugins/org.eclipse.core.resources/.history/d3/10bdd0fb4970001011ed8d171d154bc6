@@ -1,0 +1,16 @@
+package com.smartbill360.modules.tax.service;
+
+import org.springframework.stereotype.Service;
+
+import com.smartbill360.modules.tax.dto.TaxSlabRegModel;
+import com.smartbill360.modules.tax.entity.TaxSlab;
+import com.smartbill360.modules.tax.exception.TaxSlabAlreadyCreatedException;
+
+import jakarta.validation.Valid;
+
+@Service
+public interface TaxService {
+
+	TaxSlab createTaxSlab(@Valid TaxSlabRegModel model) throws TaxSlabAlreadyCreatedException;
+
+}

@@ -1,0 +1,35 @@
+package com.smartbill360.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.smartbill360.modules.product.dto.ProductRegModel;
+import com.smartbill360.modules.product.dto.UpdateProductModel;
+import com.smartbill360.modules.product.entity.Product;
+import com.smartbill360.modules.product.exception.ProductAlreadyCreatedException;
+import com.smartbill360.modules.product.exception.ProductNotFoundException;
+import com.smartbill360.modules.product.repo.ProductRepo;
+import com.smartbill360.modules.tax.dto.TaxSlabRegModel;
+import com.smartbill360.modules.tax.entity.TaxSlab;
+import com.smartbill360.modules.tax.exception.TaxSlabAlreadyCreatedException;
+import com.smartbill360.modules.tax.repo.TaxSlabRepo;
+
+import jakarta.validation.Valid;
+
+@Service
+public class ProductService {
+
+	@Autowired
+	private TaxSlabRepo taxSlabRepo;
+
+	@Autowired
+	private ProductRepo prodRepo;
+
+	
+
+	
+
+}

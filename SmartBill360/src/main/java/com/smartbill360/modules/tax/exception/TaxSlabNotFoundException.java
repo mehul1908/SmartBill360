@@ -1,0 +1,11 @@
+package com.smartbill360.modules.tax.exception;
+
+public class TaxSlabNotFoundException extends Exception{
+
+	private static final long serialVersionUID = -2900041140244138082L;
+	
+	public TaxSlabNotFoundException() {
+		super("Tax Slab not found");
+	}
+
+}

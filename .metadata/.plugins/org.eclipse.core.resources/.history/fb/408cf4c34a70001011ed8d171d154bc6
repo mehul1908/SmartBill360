@@ -1,0 +1,5 @@
+package com.smartbill360.modules.auth.service;
+
+public class AuthServiceImpl {
+
+}

@@ -1,0 +1,5 @@
+package com.smartbill360.modules.invoice.controller;
+
+public class InvoiceController {
+
+}

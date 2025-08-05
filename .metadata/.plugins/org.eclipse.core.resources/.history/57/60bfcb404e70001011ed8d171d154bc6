@@ -1,0 +1,19 @@
+package com.smartbill360.modules.otp.service;
+
+import java.util.Optional;
+
+import com.smartbill360.modules.otp.dto.OtpModel;
+import com.smartbill360.modules.otp.entity.OtpToken;
+import com.smartbill360.modules.user.entity.User;
+
+import jakarta.validation.Valid;
+
+public interface OtpService {
+
+	Boolean verifyOtp(@Valid OtpModel otp);
+
+	Optional<OtpToken> findByUser(User user);
+
+	void save(OtpToken otp);
+
+}

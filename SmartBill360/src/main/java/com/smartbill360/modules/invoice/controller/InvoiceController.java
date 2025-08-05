@@ -1,0 +1,139 @@
+package com.smartbill360.modules.invoice.controller;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Base64;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import com.smartbill360.dto.response.ApiResponse;
+import com.smartbill360.modules.invoice.dto.InvoiceRegModel;
+import com.smartbill360.modules.invoice.entity.Invoice;
+import com.smartbill360.modules.invoice.entity.InvoiceItem;
+import com.smartbill360.modules.invoice.exception.InvoiceNotFoundException;
+import com.smartbill360.modules.invoice.service.InvoiceService;
+import com.smartbill360.utilities.ConsignorDetail;
+import com.smartbill360.utilities.InvoicePDFGenerator;
+
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+
+@RestController
+@Slf4j
+public class InvoiceController {
+
+    @Autowired
+    private InvoiceService invoiceService;
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Value("${spring.mail.username}")
+    private String senderEmail;
+
+    @PreAuthorize("hasRole('ACCOUNTANT')")
+    @PostMapping("/create/invoice")
+    public ResponseEntity<ApiResponse> createInvoice(@RequestBody @Valid InvoiceRegModel model) {
+        byte[] pdf = invoiceService.createInvoice(model);
+
+        if (pdf != null) {
+            log.info("Invoice created successfully.");
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new ApiResponse(true, pdf, "Invoice created successfully"));
+        } else {
+            log.warn("Invoice creation failed.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse(false, null, "Invoice creation failed"));
+        }
+    }
+
+    @PreAuthorize("hasRole('ACCOUNTANT')")
+    @PutMapping("/update/invoice/{invoiceId}")
+    public ResponseEntity<ApiResponse> updateInvoice(
+            @RequestBody @Valid InvoiceRegModel model,
+            @PathVariable Integer invoiceId) throws InvoiceNotFoundException {
+
+        Invoice invoice = invoiceService.updateInvoice(invoiceId, model);
+        return ResponseEntity.ok(new ApiResponse(true, null, "Invoice updated successfully"));
+    }
+
+    @PreAuthorize("hasRole('ACCOUNTANT')")
+    @DeleteMapping("/remove/invoice/{invoiceId}")
+    public ResponseEntity<ApiResponse> removeInvoice(@PathVariable Integer invoiceId) throws InvoiceNotFoundException {
+        invoiceService.deactivateInvoice(invoiceId);
+        return ResponseEntity.ok(new ApiResponse(true, null, "Invoice deleted successfully"));
+    }
+
+    @PreAuthorize("authenticated()")
+    @GetMapping("/get/invoice/id/{invoiceId}")
+    public ResponseEntity<ApiResponse> getInvoiceById(@PathVariable Integer invoiceId) {
+        Invoice invoice = invoiceService.getInvoiceById(invoiceId);
+
+        if (!invoiceService.isUserRelatedToInvoice(invoice)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse(false, null, "You cannot view this invoice"));
+        }
+
+        List<InvoiceItem> items = invoiceService.getProductItemByInvoice(invoice);
+        byte[] pdf = InvoicePDFGenerator.createInvoicePDF(invoice, invoice.getConsignee(), items);
+
+        return ResponseEntity.ok(new ApiResponse(true, Base64.getEncoder().encodeToString(pdf), "Invoice fetched"));
+    }
+
+    @PreAuthorize("authenticated()")
+    @GetMapping("/send/invoice/{invoiceId}")
+    public ResponseEntity<ApiResponse> sendInvoice(@PathVariable Integer invoiceId) throws IOException, MessagingException {
+        Invoice invoice = invoiceService.getInvoiceById(invoiceId, true);
+
+        if (!invoiceService.isUserRelatedToInvoice(invoice)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse(false, null, "You cannot send this invoice"));
+        }
+
+        List<InvoiceItem> items = invoiceService.getProductItemByInvoice(invoice);
+        byte[] pdf = InvoicePDFGenerator.createInvoicePDF(invoice, invoice.getConsignee(), items);
+
+        if (pdf == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(false, null, "Failed to generate invoice PDF"));
+        }
+
+        File tempFile = File.createTempFile("invoice_" + invoice.getInvoiceNo(), ".pdf");
+        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+            fos.write(pdf);
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setFrom(senderEmail);
+            helper.setTo(invoice.getConsignee().getEmail());
+            helper.setSubject("Invoice : " + invoice.getInvoiceNo());
+            helper.setText("Dear " + invoice.getConsignee().getName()
+                    + ",\n\nPlease find your invoice attached.\n\nRegards,\n" + ConsignorDetail.getName());
+
+            FileSystemResource file = new FileSystemResource(tempFile);
+            helper.addAttachment(tempFile.getName(), file);
+
+            mailSender.send(message);
+
+            return ResponseEntity.ok(new ApiResponse(true, null, "Email sent successfully"));
+        } finally {
+            Files.deleteIfExists(tempFile.toPath());
+        }
+    }
+}

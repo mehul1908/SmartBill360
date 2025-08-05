@@ -1,0 +1,33 @@
+package com.smartbill360.modules.consignee.service;
+
+import java.util.List;
+
+import com.smartbill360.modules.consignee.dto.ConsigneeRegModel;
+import com.smartbill360.modules.consignee.dto.UpdateConsigneeModel;
+import com.smartbill360.modules.consignee.entity.Consignee;
+import com.smartbill360.modules.consignee.exception.ConsigneeNotFoundException;
+import com.smartbill360.modules.consignee.exception.GSTAlreadyExistedException;
+
+import jakarta.validation.Valid;
+
+public interface ConsigneeService {
+
+	Consignee createConsignee(@Valid ConsigneeRegModel model) throws GSTAlreadyExistedException;
+
+	Consignee getConsigneeById(Integer consigneeId, boolean isActive);
+
+	Consignee deactivateConsignee(Integer consigneeId) throws ConsigneeNotFoundException;
+
+	Consignee updateConsignee(Integer consigneeId, @Valid UpdateConsigneeModel model) throws ConsigneeNotFoundException;
+
+	Consignee getConsigneeById(Integer consigneeId);
+
+	List<Consignee> getAllConsignee();
+
+	Consignee getConsigneeByGST(String gst);
+
+	List<Consignee> searchConsigneeByNameSubstring(String keyword);
+	
+	
+
+}

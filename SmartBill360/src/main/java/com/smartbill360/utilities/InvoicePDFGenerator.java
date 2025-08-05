@@ -1,6 +1,7 @@
 package com.smartbill360.utilities;
 
 import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -16,9 +17,9 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
-import com.smartbill360.entity.Consignee;
-import com.smartbill360.entity.Invoice;
-import com.smartbill360.entity.InvoiceItem;
+import com.smartbill360.modules.consignee.entity.Consignee;
+import com.smartbill360.modules.invoice.entity.Invoice;
+import com.smartbill360.modules.invoice.entity.InvoiceItem;
 
 public class InvoicePDFGenerator {
 
@@ -68,11 +69,11 @@ public class InvoicePDFGenerator {
 			table.addHeaderCell(boldCell(header).setTextAlignment(TextAlignment.CENTER).setBorderLeft(Border.NO_BORDER)
 					.setBorderRight(Border.NO_BORDER).setTextAlignment(TextAlignment.CENTER));
 
-		Float ro = Math.round(invoice.getTotalAmt()) - invoice.getTotalAmt();
+		Float ro = Math.round(invoice.getTotalAmt().floatValue()) - invoice.getTotalAmt().floatValue();
 
 		int counter = 1, totalQty = 0;
 
-		Float cgst = 0f, sgst = 0f, cess = 0f;
+		BigDecimal cgst = BigDecimal.ZERO, sgst = BigDecimal.ZERO, cess = BigDecimal.ZERO;
 
 		for (InvoiceItem item : items) {
 			table.addCell(cell(String.valueOf(counter++)));
@@ -85,9 +86,9 @@ public class InvoicePDFGenerator {
 			table.addCell(cell(String.format("%.2f", item.getDiscInPer())));
 			table.addCell(cell(String.format("%.2f", item.getAmt())));
 			totalQty += item.getQuantity();
-			cgst += item.getCgst();
-			sgst += item.getSgst();
-			cess += item.getCess();
+			cgst = cgst.add(item.getCgst());
+			sgst = sgst.add(item.getSgst());
+			cess = cess.add(item.getCess());
 		}
 
 		// Round Off Row
@@ -109,13 +110,13 @@ public class InvoicePDFGenerator {
 		table.addCell(cell(String.valueOf(totalQty)));
 		table.addCell(cell(""));
 		table.addCell(cell(""));
-		table.addCell(cell(formatAmount(invoice.getTaxAmt())));
+		table.addCell(cell(formatAmount(invoice.getTaxAmt().floatValue())));
 		table.addCell(cell(""));
-		table.addCell(cell(formatAmount(Math.round(invoice.getTotalAmt()))));
+		table.addCell(cell(formatAmount(Math.round(invoice.getTotalAmt().floatValue()))));
 
 		document.add(table);
 		document.add(new Paragraph("Total Payable Amount in Words : ").setBold());
-		document.add(new Paragraph(convertRupeesToWords(Math.round(invoice.getTotalAmt()))));
+		document.add(new Paragraph(convertRupeesToWords(Math.round(invoice.getTotalAmt().floatValue()))));
 		document.add(new Paragraph("\n\n\n"));
 
 		document.add(new Cell().add(new Paragraph("Tax Summary")).setBold().setTextAlignment(TextAlignment.CENTER)
@@ -133,14 +134,14 @@ public class InvoicePDFGenerator {
 				boldCell("Total Tax").setTextAlignment(TextAlignment.CENTER).setBorderLeft(Border.NO_BORDER)
 						.setBorderRight(Border.NO_BORDER).setTextAlignment(TextAlignment.CENTER));
 
-		taxSumm.addCell(cell(formatAmount(cgst)));
-		taxSumm.addCell(cell(formatAmount(sgst)));
-		taxSumm.addCell(cell(formatAmount(cess)));
-		taxSumm.addCell(cell(formatAmount(invoice.getTaxAmt())));
+		taxSumm.addCell(cell(formatAmount(cgst.floatValue())));
+		taxSumm.addCell(cell(formatAmount(sgst.floatValue())));
+		taxSumm.addCell(cell(formatAmount(cess.floatValue())));
+		taxSumm.addCell(cell(formatAmount(invoice.getTaxAmt().floatValue())));
 
 		document.add(taxSumm);
 		document.add(new Paragraph("Total Tax Amount in Words : ").setBold());
-		document.add(new Paragraph(convertRupeesToWords(invoice.getTaxAmt())));
+		document.add(new Paragraph(convertRupeesToWords(invoice.getTaxAmt().floatValue())));
 
 
 		document.close();

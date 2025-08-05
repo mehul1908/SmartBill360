@@ -1,0 +1,43 @@
+package com.smartbill360.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.smartbill360.config.jwt.JWTUtils;
+import com.smartbill360.dto.response.ApiResponse;
+import com.smartbill360.dto.response.LoginResponse;
+import com.smartbill360.modules.user.dto.LoginModel;
+import com.smartbill360.modules.user.dto.RegisterModel;
+import com.smartbill360.modules.user.entity.User;
+import com.smartbill360.modules.user.exception.EmailAndPasswordNotMatchException;
+import com.smartbill360.modules.user.exception.UserAlreadyCreatedException;
+import com.smartbill360.service.UserService;
+
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+
+@RestController
+@RequestMapping("/auth")
+@Validated
+@Slf4j
+public class WebController {
+
+	@Autowired
+	private UserService userService;
+	
+	@Autowired
+	private PasswordEncoder passEncoder;
+	
+	@Autowired
+	private JWTUtils jwtUtils;
+	
+	
+	
+	
+}

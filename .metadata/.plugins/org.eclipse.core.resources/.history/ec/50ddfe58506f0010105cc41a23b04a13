@@ -1,0 +1,68 @@
+package com.smartbill360.modules.invoice.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.smartbill360.dto.response.ApiResponse;
+import com.smartbill360.modules.invoice.dto.InvoiceRegModel;
+import com.smartbill360.modules.invoice.entity.Invoice;
+import com.smartbill360.modules.invoice.exception.InvoiceNotFoundException;
+import com.smartbill360.modules.invoice.service.InvoiceService;
+
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+
+@RestController
+@Slf4j
+public class InvoiceController {
+
+	@Autowired
+	private InvoiceService invoiceService;
+
+	// create a invoice
+	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@PostMapping("/create/invoice")
+	public ResponseEntity<ApiResponse> createInvoice(@RequestBody @Valid InvoiceRegModel model) {
+		byte[] pdf = invoiceService.createInvoice(model);
+		if (pdf != null) {
+			log.info("Invoice is created");
+			return ResponseEntity.ok().body(new ApiResponse(true, pdf, "Invoice created successfully"));
+		} else {
+			log.warn("Invoice is not created");
+			return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Invoice can not be created"));
+		}
+	}
+
+	// update invoice
+	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@PutMapping("/update/invoice/{invoiceId}")
+	public ResponseEntity<ApiResponse> updateInvoice(@RequestBody @Valid InvoiceRegModel model,
+			@PathVariable Integer invoiceId) throws InvoiceNotFoundException {
+
+		Invoice inv = invoiceService.updateInvoice(invoiceId, model);
+		if (inv == null)
+			return ResponseEntity.badRequest()
+					.body(new ApiResponse(false, null, "Updation of invoice is not carried out"));
+		else
+			return ResponseEntity.ok(new ApiResponse(true, null, "Updation completed"));
+
+	}
+
+	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@DeleteMapping("/remove/invoice/{invoiceId}")
+	public ResponseEntity<ApiResponse> removeInvoice(@PathVariable Integer invoiceId) throws InvoiceNotFoundException {
+		Invoice inv = invoiceService.deactivateInvoice(invoiceId);
+		if (inv == null)
+			return ResponseEntity.badRequest()
+					.body(new ApiResponse(false, null, "Updation of Invoice is not carried out"));
+		else
+			return ResponseEntity.ok(new ApiResponse(true, null, "Updation completed"));
+	}
+}

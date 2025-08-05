@@ -1,0 +1,18 @@
+package com.smartbill360.modules.product.service;
+
+import org.springframework.stereotype.Service;
+
+import com.smartbill360.modules.product.dto.ProductRegModel;
+import com.smartbill360.modules.product.entity.Product;
+import com.smartbill360.modules.product.exception.ProductAlreadyCreatedException;
+
+import jakarta.validation.Valid;
+
+@Service
+public interface ProductService {
+
+	Product createProduct(@Valid ProductRegModel model) throws ProductAlreadyCreatedException;
+
+	Product getProductById(Integer productId, boolean b);
+
+}

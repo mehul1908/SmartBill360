@@ -1,0 +1,49 @@
+package com.smartbill360.modules.invoice.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.smartbill360.common.enums.Role;
+import com.smartbill360.modules.consignee.service.ConsigneeService;
+import com.smartbill360.modules.invoice.dto.InvoiceRegModel;
+import com.smartbill360.modules.invoice.entity.Invoice;
+import com.smartbill360.modules.invoice.repo.InvoiceRepo;
+import com.smartbill360.modules.user.entity.User;
+import com.smartbill360.modules.user.exception.UnauthorizedUserException;
+import com.smartbill360.modules.user.service.UserService;
+
+import jakarta.validation.Valid;
+
+public class InvoiceServiceImpl implements InvoiceService {
+
+	@Autowired
+	private ConsigneeService consigneeService;
+	
+	@Autowired
+	private UserService userService;
+	
+	@Autowired
+	private InvoiceRepo invoiceRepo;
+	
+	public byte[] createInvoice(@Valid InvoiceRegModel model) {
+
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null && auth.getPrincipal() instanceof User accountant) {
+
+			Invoice invoice = new Invoice(consigneeService.getConsigneeById(model.getConsigneeId(), true),
+					userService.getUserByEmailAndRole(model.getConsignorEmail(), Role.ROLE_CLIENT), accountant);
+			invoiceRepo.save(invoice);
+			try {
+				return this.addProductItem(invoice, model.getProducts());
+			} catch (Exception ex) {
+				invoiceRepo.delete(invoice);
+				throw ex;
+			}
+
+		} else {
+			throw new UnauthorizedUserException("User is unauthentical or not valid");
+		}
+	}
+
+}

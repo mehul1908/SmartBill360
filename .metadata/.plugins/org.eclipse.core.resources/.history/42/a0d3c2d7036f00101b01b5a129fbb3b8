@@ -1,0 +1,8 @@
+package com.smartbill360.modules.tax.service;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public interface TaxService {
+
+}

@@ -1,0 +1,10 @@
+package com.smartbill360.modules.user.service;
+
+import org.springframework.stereotype.Component;
+
+
+@Component
+public interface UserService {
+
+
+}

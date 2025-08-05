@@ -1,0 +1,5 @@
+package com.smartbill360.modules.consignee.service;
+
+public class ConsigneeServiceImpl implements ConsigneeService {
+
+}

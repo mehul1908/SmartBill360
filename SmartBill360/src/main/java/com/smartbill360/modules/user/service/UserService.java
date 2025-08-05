@@ -1,0 +1,35 @@
+package com.smartbill360.modules.user.service;
+
+import java.util.List;
+import java.util.Optional;
+
+
+import com.smartbill360.common.enums.Role;
+import com.smartbill360.modules.user.dto.RegisterModel;
+import com.smartbill360.modules.user.dto.UpdateUserModel;
+import com.smartbill360.modules.user.entity.User;
+import com.smartbill360.modules.user.exception.UserAlreadyCreatedException;
+
+import jakarta.validation.Valid;
+
+
+public interface UserService {
+
+	User getUserByEmailAndRole(String consignorEmail, Role roleClient);
+
+	User getUserByEmail(String email);
+
+	List<User> getUserByRole(Role role);
+
+	User saveUser(@Valid RegisterModel model) throws UserAlreadyCreatedException;
+
+	User updateUser(UpdateUserModel model);
+
+	User deactivate(User user);
+
+	void save(User user);
+
+	Optional<User> findByEmailAndIsActiveTrue(String email);
+
+
+}

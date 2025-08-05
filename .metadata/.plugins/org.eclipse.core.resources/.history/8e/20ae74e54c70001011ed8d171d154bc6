@@ -1,0 +1,67 @@
+package com.smartbill360.service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import com.smartbill360.common.enums.Role;
+import com.smartbill360.modules.auth.exception.UnauthorizedUserException;
+import com.smartbill360.modules.consignee.dto.ConsigneeRegModel;
+import com.smartbill360.modules.consignee.dto.UpdateConsigneeModel;
+import com.smartbill360.modules.consignee.entity.Consignee;
+import com.smartbill360.modules.consignee.exception.ConsigneeNotFoundException;
+import com.smartbill360.modules.consignee.exception.GSTAlreadyExistedException;
+import com.smartbill360.modules.consignee.repo.ConsigneeRepo;
+import com.smartbill360.modules.otp.dto.OtpModel;
+import com.smartbill360.modules.otp.entity.OtpToken;
+import com.smartbill360.modules.otp.repo.OtpTokenRepo;
+import com.smartbill360.modules.user.dto.LoginModel;
+import com.smartbill360.modules.user.dto.RegisterModel;
+import com.smartbill360.modules.user.dto.UpdateUserModel;
+import com.smartbill360.modules.user.entity.User;
+import com.smartbill360.modules.user.exception.UserAlreadyCreatedException;
+import com.smartbill360.modules.user.repo.UserRepo;
+import com.smartbill360.utilities.EmailMessage;
+
+import jakarta.mail.MessagingException;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+
+@Service
+public class UserService implements UserDetailsService {
+
+	@Autowired
+	private UserRepo userRepo;
+
+	@Autowired
+	private ConsigneeRepo consigneeRepo;
+	
+	@Autowired
+	private OtpTokenRepo otpRepo;
+	
+	
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+	
+	
+
+}

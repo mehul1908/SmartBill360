@@ -11,6 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.smartbill360.config.jwt.JWTFilter;
+
 @Configuration
 public class SecurityConfig {
 
@@ -24,7 +26,9 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/webjars/**" , "/login/oauth2/code/google").permitAll()
-                .anyRequest().permitAll()
+                .requestMatchers("/acc/**").hasRole("ACCOUNTANT")
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated()
             );
 
         // Add JWT Filter

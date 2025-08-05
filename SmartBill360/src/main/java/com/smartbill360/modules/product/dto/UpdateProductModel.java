@@ -1,0 +1,31 @@
+package com.smartbill360.modules.product.dto;
+
+import java.math.BigDecimal;
+
+import com.smartbill360.modules.tax.entity.TaxSlab;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class UpdateProductModel {
+
+	
+	@NotBlank(message="Name cannot be null")
+	private String name;
+	
+	@NotBlank(message = "HSN Code can not be null")
+	private String hsnCode;
+	
+	@NotNull(message = "Tax Slab can not be Null")
+	private TaxSlab taxSlab;
+	
+	@NotNull(message = "Rate can not be null")
+	private BigDecimal rate;
+	
+}

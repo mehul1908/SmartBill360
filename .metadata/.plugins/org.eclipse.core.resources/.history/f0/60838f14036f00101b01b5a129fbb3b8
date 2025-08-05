@@ -1,0 +1,15 @@
+package com.smartbill360.modules.product.service;
+
+import org.springframework.stereotype.Component;
+
+import com.smartbill360.modules.product.dto.ProductRegModel;
+import com.smartbill360.modules.product.entity.Product;
+
+import jakarta.validation.Valid;
+
+@Component
+public interface ProductService {
+
+	Product createProduct(@Valid ProductRegModel model);
+
+}

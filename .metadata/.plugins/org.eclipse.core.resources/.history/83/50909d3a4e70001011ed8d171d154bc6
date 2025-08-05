@@ -1,0 +1,33 @@
+package com.smartbill360.modules.otp.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.smartbill360.dto.response.ApiResponse;
+import com.smartbill360.modules.otp.dto.OtpModel;
+import com.smartbill360.modules.otp.service.OtpService;
+
+import jakarta.validation.Valid;
+
+@RestController
+public class OtpController {
+
+	@Autowired
+	private OtpService otpService;
+	
+	@PreAuthorize("authenticated()")
+	@PostMapping("/check/otp")
+	public ResponseEntity<ApiResponse> checkOtp(@RequestBody @Valid OtpModel otp) {
+		Boolean isValid = otpService.verifyOtp(otp);
+		if (isValid) {
+			return ResponseEntity.ok(new ApiResponse(true, null, "Otp is Successfully verified"));
+		}
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse(false, null, "Otp is not correct"));
+	}
+	
+}

@@ -1,0 +1,178 @@
+package com.smartbill360.controller;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.smartbill360.dto.response.ApiResponse;
+import com.smartbill360.modules.consignee.dto.ConsigneeRegModel;
+import com.smartbill360.modules.consignee.dto.UpdateConsigneeModel;
+import com.smartbill360.modules.consignee.entity.Consignee;
+import com.smartbill360.modules.consignee.exception.ConsigneeNotFoundException;
+import com.smartbill360.modules.consignee.exception.GSTAlreadyExistedException;
+import com.smartbill360.modules.invoice.dto.InvoiceRegModel;
+import com.smartbill360.modules.invoice.entity.Invoice;
+import com.smartbill360.modules.invoice.exception.InvoiceNotFoundException;
+import com.smartbill360.modules.product.dto.ProductRegModel;
+import com.smartbill360.modules.product.dto.UpdateProductModel;
+import com.smartbill360.modules.product.entity.Product;
+import com.smartbill360.modules.product.exception.ProductAlreadyCreatedException;
+import com.smartbill360.modules.product.exception.ProductNotFoundException;
+import com.smartbill360.modules.tax.dto.TaxSlabRegModel;
+import com.smartbill360.modules.tax.entity.TaxSlab;
+import com.smartbill360.modules.tax.exception.TaxSlabAlreadyCreatedException;
+import com.smartbill360.service.InvoiceService;
+import com.smartbill360.service.ProductService;
+import com.smartbill360.service.UserService;
+
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+
+@RestController
+@RequestMapping("/acc")
+@Slf4j
+public class AccountantController {
+	
+	@Autowired
+	private UserService userService;
+	
+	@Autowired
+	private ProductService proService;
+	
+	@Autowired
+	private InvoiceService invoiceService;	
+	
+	//create a product
+	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@PostMapping("/create/product")
+	public ResponseEntity<ApiResponse> createProduct(@RequestBody @Valid ProductRegModel model) throws ProductAlreadyCreatedException{
+		Product prod = proService.createProduct(model);
+		if(prod != null) {
+			log.info("Product created successfully");
+			return ResponseEntity.ok(new ApiResponse(true, null, "Product is created successfully"));
+		}else {
+			log.warn("Product is not created");
+			return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Product can not be created"));
+		}
+		
+	}
+	
+	/*-----------------------------------------*/
+	
+	//create a tax slab
+	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@PostMapping("/create/tax-slab")
+	public ResponseEntity<ApiResponse> createTaxSlab(@RequestBody @Valid TaxSlabRegModel model) throws TaxSlabAlreadyCreatedException{
+		
+		TaxSlab taxSlab = proService.createTaxSlab(model);
+	
+		if(taxSlab != null) {
+			log.info("Tax slab is created");
+			return ResponseEntity.ok(new ApiResponse(true, null, "Tax Slab is created successfully"));
+		}else {
+			log.warn("Tax Slab is not created");
+			return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Tax Slab can not be created"));
+		}		
+	}
+	
+	//create a invoice
+	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@PostMapping("/create/invoice")
+	public ResponseEntity<ApiResponse> createInvoice(@RequestBody @Valid InvoiceRegModel model ){
+		byte[] pdf  = invoiceService.createInvoice(model);
+		if(pdf != null) {
+			log.info("Invoice is created");
+			return ResponseEntity.ok()
+			        .body(new ApiResponse(true, pdf, "Invoice created successfully"));
+		}else {
+			log.warn("Invoice is not created");
+			return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Invoice can not be created"));
+		}
+	}	
+	
+	//update consignee
+	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@PutMapping("/update/consignee/{consigneeId}")
+	public ResponseEntity<ApiResponse> updateConsignee(@RequestBody @Valid UpdateConsigneeModel model , @PathVariable Integer consigneeId) throws ConsigneeNotFoundException{
+		
+		Consignee consignee = userService.updateConsignee(consigneeId , model);
+		
+		if(consignee == null) {
+			log.info("Consignee is updated");
+			return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Updation of Consignee is not carried out"));
+		}
+		else {
+			log.warn("Consignee is not updated");
+			return ResponseEntity.ok(new ApiResponse(true , null , "Updation completed"));
+		}
+	}
+	
+	//remove the consignee
+	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@DeleteMapping("/remove/consignee/{consigneeId}")
+	public ResponseEntity<ApiResponse> removeConsignee(@PathVariable Integer consigneeId) throws ConsigneeNotFoundException{
+		Consignee consignee = userService.deactivateConsignee(consigneeId);
+		if(consignee == null) {
+			log.warn("Consignee is not deactivated");
+			return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Updation of Consignee is not carried out"));
+		}
+		else {
+			log.info("Consignee is deactivated");
+			return ResponseEntity.ok(new ApiResponse(true , null , "Updation completed"));
+		}
+	}
+	
+	//update invoice
+	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@PutMapping("/update/invoice/{invoiceId}")
+	public ResponseEntity<ApiResponse> updateInvoice(@RequestBody @Valid InvoiceRegModel model , @PathVariable Integer invoiceId) throws InvoiceNotFoundException{
+		
+		Invoice inv = invoiceService.updateInvoice(invoiceId , model);
+		if(inv == null)
+			return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Updation of invoice is not carried out"));
+		else
+			return ResponseEntity.ok(new ApiResponse(true , null , "Updation completed"));
+		
+	}
+	
+	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@DeleteMapping("/remove/invoice/{invoiceId}")
+	public ResponseEntity<ApiResponse> removeInvoice(@PathVariable Integer invoiceId) throws InvoiceNotFoundException{
+		Invoice inv = invoiceService.deactivateInvoice(invoiceId);
+		if(inv == null)
+			return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Updation of Invoice is not carried out"));
+		else
+			return ResponseEntity.ok(new ApiResponse(true , null , "Updation completed"));
+	}
+	
+	
+	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@PutMapping("/update/product/{productId}")
+	public ResponseEntity<ApiResponse> updateProduct(@RequestBody @Valid UpdateProductModel model , @PathVariable Integer productId) throws InvoiceNotFoundException, ProductNotFoundException{
+		
+		Product prod = proService.updateProduct(productId , model);
+		if(prod == null)
+			return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Updation of Product is not carried out"));
+		else
+			return ResponseEntity.ok(new ApiResponse(true , null , "Updation completed"));
+		
+	}
+	
+	@PreAuthorize("hasRole('ACCOUNTANT')")
+	@DeleteMapping("/remove/product/{productId}")
+	public ResponseEntity<ApiResponse> removeProduct(@PathVariable Integer productId) throws ProductNotFoundException {
+		Product prod = proService.removeProduct(productId);
+		if(prod == null)
+			return ResponseEntity.badRequest().body(new ApiResponse(false, null, "Updation of Product is not carried out"));
+		else
+			return ResponseEntity.ok(new ApiResponse(true , null , "Updation completed"));
+	}
+}

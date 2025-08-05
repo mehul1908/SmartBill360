@@ -1,0 +1,20 @@
+package com.smartbill360.modules.consignee.service;
+
+import org.springframework.stereotype.Service;
+
+import com.smartbill360.modules.consignee.dto.ConsigneeRegModel;
+import com.smartbill360.modules.consignee.entity.Consignee;
+import com.smartbill360.modules.consignee.exception.GSTAlreadyExistedException;
+
+import jakarta.validation.Valid;
+
+@Service
+public interface ConsigneeService {
+
+	Consignee createConsignee(@Valid ConsigneeRegModel model) throws GSTAlreadyExistedException;
+
+	Consignee getConsigneeById(Integer consigneeId, boolean b);
+
+	Consignee deactivateConsignee(Integer consigneeId);
+
+}
