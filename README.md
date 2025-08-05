@@ -35,21 +35,36 @@
 com.smartbill360
 ├── SmartBill360Application.java
 ├── config
-│ └── SecurityConfig, JWTUtils, JWTFilter
+│   ├── SecurityConfig.java
+│   ├── JWTUtils.java
+│   └── JWTFilter.java
 ├── controller
-│ └── AuthController, InvoiceController, ConsigneeController
+│   ├── AuthController.java
+│   ├── InvoiceController.java
+│   └── ConsigneeController.java
 ├── dto
-│ └── request/response models
+│   ├── request
+│   │   └── (All request DTOs)
+│   └── response
+│       └── (All response DTOs)
 ├── entity
-│ └── Invoice, InvoiceItem, Consignee, User
+│   ├── Invoice.java
+│   ├── InvoiceItem.java
+│   ├── Consignee.java
+│   └── User.java
 ├── exception
-│ └── GlobalExceptionHandler, Custom Exceptions
+│   ├── GlobalExceptionHandler.java
+│   └── (Custom Exceptions)
 ├── repo
-│ └── JpaRepository interfaces
+│   └── (JPA Repository Interfaces)
 ├── service
-│ └── Interfaces and Implementations
+│   ├── interfaces
+│   └── impl
 ├── utilities
-│ └── PDFGenerator, OTPUtils, ConsignorDetails
+│   ├── PDFGenerator.java
+│   ├── OTPUtils.java
+│   └── ConsignorDetails.java
+
 
 ---
 
