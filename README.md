@@ -30,41 +30,6 @@
 
 ---
 
-## 📁 Module Structure
-
-com.smartbill360
-├── SmartBill360Application.java
-├── config
-│   ├── SecurityConfig.java
-│   ├── JWTUtils.java
-│   └── JWTFilter.java
-├── controller
-│   ├── AuthController.java
-│   ├── InvoiceController.java
-│   └── ConsigneeController.java
-├── dto
-│   ├── request
-│   │   └── (All request DTOs)
-│   └── response
-│       └── (All response DTOs)
-├── entity
-│   ├── Invoice.java
-│   ├── InvoiceItem.java
-│   ├── Consignee.java
-│   └── User.java
-├── exception
-│   ├── GlobalExceptionHandler.java
-│   └── (Custom Exceptions)
-├── repo
-│   └── (JPA Repository Interfaces)
-├── service
-│   ├── interfaces
-│   └── impl
-├── utilities
-│   ├── PDFGenerator.java
-│   ├── OTPUtils.java
-│   └── ConsignorDetails.java
-
 
 ---
 
