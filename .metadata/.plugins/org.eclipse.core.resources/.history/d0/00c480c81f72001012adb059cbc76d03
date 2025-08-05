@@ -44,7 +44,7 @@ public class UserServiceImpl implements UserService , UserDetailsService{
 	
 	public User saveUser(@Valid RegisterModel model) throws UserAlreadyCreatedException {
 		User user = this.getUserByEmail(model.getEmail());
-		if (user != null) {
+		if (user == null) {
 			String message = "User with email id " + model.getEmail() + " is already created";
 			throw new UserAlreadyCreatedException(message);
 		}

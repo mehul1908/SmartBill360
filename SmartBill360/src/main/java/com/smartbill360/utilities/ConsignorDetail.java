@@ -8,7 +8,7 @@ public class ConsignorDetail {
 	
 	private static String phoneNo = "+91 99999 99999";
 	
-	private static String address = "25 Kanwar Colony \n Barwaha";
+	private static String address = "ST Road , Indore";
 	
 	private static String email = "narmadashree@gmail.com";
 

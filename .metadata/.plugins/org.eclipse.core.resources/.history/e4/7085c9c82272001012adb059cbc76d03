@@ -35,7 +35,7 @@ public class TaxController {
 
 	// create a tax slab
 	@PreAuthorize("hasRole('ACCOUNTANT')")
-	@PostMapping("/create")
+	@PostMapping("/create/tax-slab")
 	public ResponseEntity<ApiResponse> createTaxSlab(@RequestBody @Valid TaxSlabRegModel model)
 			throws TaxSlabAlreadyCreatedException {
 

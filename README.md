@@ -83,8 +83,8 @@ com.smartbill360
 ---
 
 📷 Screenshots (Optional)
- - Bill Sample - /samples/invoice.pdf
- - Email Sample - /samples/email.jpg
+ - Bill Sample - /samples/invoice
+ - Email Sample - /samples/email
 
 ---
 

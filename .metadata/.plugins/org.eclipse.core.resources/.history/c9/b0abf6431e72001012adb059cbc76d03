@@ -18,7 +18,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.smartbill360.dto.response.ApiResponse;
-import com.smartbill360.exception.ResourceNotFoundException;
 import com.smartbill360.modules.consignee.exception.ConsigneeNotFoundException;
 import com.smartbill360.modules.invoice.dto.InvoiceRegModel;
 import com.smartbill360.modules.invoice.entity.Invoice;
@@ -35,7 +34,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @Slf4j
-@RequestMapping("/invoice")
 public class InvoiceController {
 
     @Autowired
@@ -48,7 +46,7 @@ public class InvoiceController {
     private String senderEmail;
 
     @PreAuthorize("hasRole('ACCOUNTANT')")
-    @PostMapping("/create")
+    @PostMapping("/create/invoice")
     public ResponseEntity<ApiResponse> createInvoice(@RequestBody @Valid InvoiceRegModel model) throws ConsigneeNotFoundException {
         byte[] pdf = invoiceService.createInvoice(model);
 
@@ -64,7 +62,7 @@ public class InvoiceController {
     }
 
     @PreAuthorize("hasRole('ACCOUNTANT')")
-    @PutMapping("/update/{invoiceId}")
+    @PutMapping("/update/invoice/{invoiceId}")
     public ResponseEntity<ApiResponse> updateInvoice(
             @RequestBody @Valid InvoiceRegModel model,
             @PathVariable Integer invoiceId) throws InvoiceNotFoundException {
@@ -74,14 +72,14 @@ public class InvoiceController {
     }
 
     @PreAuthorize("hasRole('ACCOUNTANT')")
-    @DeleteMapping("/remove/{invoiceId}")
+    @DeleteMapping("/remove/invoice/{invoiceId}")
     public ResponseEntity<ApiResponse> removeInvoice(@PathVariable Integer invoiceId) throws InvoiceNotFoundException {
         invoiceService.deactivateInvoice(invoiceId);
         return ResponseEntity.ok(new ApiResponse(true, null, "Invoice deleted successfully"));
     }
 
     @PreAuthorize("authenticated()")
-    @GetMapping("/get/{invoiceId}")
+    @GetMapping("/get/invoice/id/{invoiceId}")
     public ResponseEntity<ApiResponse> getInvoiceById(@PathVariable Integer invoiceId) throws InvoiceNotFoundException {
         Invoice invoice = invoiceService.getInvoiceById(invoiceId);
 
@@ -97,14 +95,10 @@ public class InvoiceController {
     }
 
     @PreAuthorize("authenticated()")
-    @GetMapping("/send/{invoiceId}")
+    @GetMapping("/send/invoice/{invoiceId}")
     public ResponseEntity<ApiResponse> sendInvoice(@PathVariable Integer invoiceId) throws IOException, MessagingException, InvoiceNotFoundException {
         Invoice invoice = invoiceService.getInvoiceById(invoiceId, true);
 
-        if(invoice==null) {
-        	throw new ResourceNotFoundException("Invoice with ID " + invoiceId + " not found");
-        }
-        
         if (!invoiceService.isUserRelatedToInvoice(invoice)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ApiResponse(false, null, "You cannot send this invoice"));

@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.smartbill360.dto.response.ApiResponse;
@@ -17,14 +16,13 @@ import com.smartbill360.modules.otp.service.OtpService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/otp")
 public class OtpController {
 
 	@Autowired
 	private OtpService otpService;
 	
 	@PreAuthorize("authenticated()")
-	@PostMapping("/check/")
+	@PostMapping("/check/otp")
 	public ResponseEntity<ApiResponse> checkOtp(@RequestBody @Valid OtpModel otp) {
 		Boolean isValid = otpService.verifyOtp(otp);
 		if (isValid) {
