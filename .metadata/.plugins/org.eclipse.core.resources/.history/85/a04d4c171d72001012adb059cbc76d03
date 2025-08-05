@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import com.smartbill360.common.enums.Role;
 
 import com.smartbill360.modules.auth.exception.UnauthorizedUserException;
-import com.smartbill360.modules.consignee.exception.ConsigneeNotFoundException;
+
 import com.smartbill360.modules.consignee.service.ConsigneeService;
 
 import com.smartbill360.modules.invoice.dto.InvoiceItemRegModel;
@@ -50,12 +50,12 @@ public class InvoiceServiceImpl implements InvoiceService {
 	@Autowired
 	private InvoiceItemRepo invItemRepo;
 	
-	public byte[] createInvoice(@Valid InvoiceRegModel model) throws ConsigneeNotFoundException {
+	public byte[] createInvoice(@Valid InvoiceRegModel model) {
 
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth != null && auth.getPrincipal() instanceof User accountant) {
 
-			Invoice invoice = new Invoice(consigneeService.getConsigneeByIdAndStatus(model.getConsigneeId(), true),
+			Invoice invoice = new Invoice(consigneeService.getConsigneeById(model.getConsigneeId(), true),
 					userService.getUserByEmailAndRole(model.getConsignorEmail(), Role.ROLE_CLIENT), accountant);
 			invoiceRepo.save(invoice);
 			try {

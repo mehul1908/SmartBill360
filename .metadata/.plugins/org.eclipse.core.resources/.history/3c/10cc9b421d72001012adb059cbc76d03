@@ -18,7 +18,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.smartbill360.dto.response.ApiResponse;
-import com.smartbill360.modules.consignee.exception.ConsigneeNotFoundException;
 import com.smartbill360.modules.invoice.dto.InvoiceRegModel;
 import com.smartbill360.modules.invoice.entity.Invoice;
 import com.smartbill360.modules.invoice.entity.InvoiceItem;
@@ -47,7 +46,7 @@ public class InvoiceController {
 
     @PreAuthorize("hasRole('ACCOUNTANT')")
     @PostMapping("/create/invoice")
-    public ResponseEntity<ApiResponse> createInvoice(@RequestBody @Valid InvoiceRegModel model) throws ConsigneeNotFoundException {
+    public ResponseEntity<ApiResponse> createInvoice(@RequestBody @Valid InvoiceRegModel model) {
         byte[] pdf = invoiceService.createInvoice(model);
 
         if (pdf != null) {
